@@ -1,26 +1,182 @@
 @import "tailwindcss";
 
+/* =========================================================
+   THEME
+   ========================================================= */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+    --background: #f7f7f5;
+
+    --surface: #ffffff;
+
+    --foreground: #111111;
+
+    --foreground-muted: #6b6b6b;
+
+    --foreground-subtle: #999999;
+
+    --border: #e5e5e2;
+
+    --border-strong: #d8d8d4;
+
+    --accent: #111111;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+[data-theme="dark"] {
+    --background: #0d0d0d;
+
+    --surface: #151515;
+
+    --foreground: #f2f2f0;
+
+    --foreground-muted: #929292;
+
+    --foreground-subtle: #666666;
+
+    --border: #292929;
+
+    --border-strong: #383838;
+
+    --accent: #f2f2f0;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* =========================================================
+   RESET
+   ========================================================= */
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    background: var(--background);
+
+    color: var(--foreground);
+
+    scroll-behavior: auto;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+    margin: 0;
+
+    min-height: 100vh;
+
+    background: var(--background);
+
+    color: var(--foreground);
+
+    font-family: var(--font-geist), sans-serif;
+
+    -webkit-font-smoothing: antialiased;
+
+    -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+    color: inherit;
+}
+
+button,
+input,
+textarea,
+select {
+    font: inherit;
+}
+
+/* =========================================================
+   LENIS
+   ========================================================= */
+
+html.lenis,
+html.lenis body {
+    height: auto;
+}
+
+.lenis.lenis-smooth {
+    scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+    overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+    overflow: hidden;
+}
+
+.lenis.lenis-smooth iframe {
+    pointer-events: none;
+}
+
+/* =========================================================
+   HERO SCROLL INDICATOR
+   ========================================================= */
+
+@keyframes hero-scroll-line {
+    0% {
+        transform: translateX(-100%);
+    }
+
+    45% {
+        transform: translateX(0);
+    }
+
+    70% {
+        transform: translateX(100%);
+    }
+
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+/* =========================================================
+   THEME TRANSITION
+   ========================================================= */
+
+html,
+body,
+main {
+    transition:
+        background-color 0.4s ease,
+        color 0.4s ease;
+}
+
+/* =========================================================
+   REDUCED MOTION
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto !important;
+    }
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+
+        animation-iteration-count: 1 !important;
+
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* =========================================================
+   INTRO NOISE
+   ========================================================= */
+
+.intro-noise {
+    position: absolute;
+    inset: 0;
+
+    z-index: 50;
+
+    pointer-events: none;
+
+    opacity: 0.025;
+
+    mix-blend-mode: multiply;
+
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.8'/%3E%3C/svg%3E");
 }
