@@ -91,11 +91,22 @@ export default function Landing() {
      * =====================================
      * INTRO DETECTION
      * =====================================
+     *
+     * Explicit HTMLElement generic supaya
+     * TypeScript mengenali .style.
      */
 
-    const intro = document.querySelector(".intro");
+    const intro = document.querySelector<HTMLElement>(".intro");
 
     let entranceTimeline: gsap.core.Timeline | null = null;
+
+    let started = false;
+
+    /*
+     * =====================================
+     * PLAY ENTRANCE
+     * =====================================
+     */
 
     const playEntrance = () => {
       if (entranceTimeline) {
@@ -190,46 +201,68 @@ export default function Landing() {
     };
 
     /*
-     * No intro.
+     * =====================================
+     * NO INTRO
+     * =====================================
      */
 
     if (!intro) {
+      started = true;
+
       playEntrance();
     }
 
     /*
-     * Intro already finished.
+     * =====================================
+     * INTRO ALREADY FINISHED
+     * =====================================
      */
 
     if (intro && intro.style.visibility === "hidden") {
+      started = true;
+
       playEntrance();
     }
 
     /*
-     * Watch intro.
+     * =====================================
+     * WATCH INTRO
+     * =====================================
+     *
+     * Observer dibuat hanya jika intro
+     * memang ada.
+     *
+     * Dengan cara ini observer tidak pernah
+     * memiliki tipe null di dalam callback.
      */
 
-    let started = false;
+    let observer: MutationObserver | undefined;
 
-    const observer = intro
-      ? new MutationObserver(() => {
-          if (!started && intro.style.visibility === "hidden") {
-            started = true;
+    if (intro && !started) {
+      observer = new MutationObserver(() => {
+        if (started || intro.style.visibility !== "hidden") {
+          return;
+        }
 
-            playEntrance();
+        started = true;
 
-            observer.disconnect();
-          }
-        })
-      : null;
+        playEntrance();
 
-    if (observer && intro) {
+        observer?.disconnect();
+      });
+
       observer.observe(intro, {
         attributes: true,
 
         attributeFilter: ["style"],
       });
     }
+
+    /*
+     * =====================================
+     * CLEANUP
+     * =====================================
+     */
 
     return () => {
       observer?.disconnect();
@@ -398,17 +431,21 @@ export default function Landing() {
     }
   };
 
+  /*
+   * =========================================
+   * RENDER
+   * =========================================
+   */
+
   return (
     <section
       ref={heroRef}
+      id="hero"
       className="
         relative
-
         min-h-screen
         w-full
-
         overflow-hidden
-
         bg-[var(--background)]
         text-[var(--foreground)]
       "
@@ -421,10 +458,8 @@ export default function Landing() {
         ref={scrollContentRef}
         className="
           relative
-
           min-h-screen
           w-full
-
           will-change-transform
         "
       >
@@ -436,23 +471,17 @@ export default function Landing() {
           ref={entranceRef}
           className="
             relative
-
             flex
             min-h-screen
             w-full
-
             flex-col
-
             justify-between
-
             px-6
             pb-8
             pt-28
-
             md:px-12
             md:pb-12
             md:pt-[160px]
-
             will-change-transform
           "
         >
@@ -464,21 +493,16 @@ export default function Landing() {
             ref={metaRef}
             className="
               absolute
-
               left-6
               right-6
               top-[104px]
-
               z-2
-
               flex
               items-start
               justify-between
-
               md:left-12
               md:right-12
               md:top-[118px]
-
               will-change-[transform,opacity]
             "
           >
@@ -492,15 +516,10 @@ export default function Landing() {
               <span
                 className="
                   font-mono
-
                   text-[9px]
-
                   font-medium
-
                   leading-none
-
                   tracking-[0.15em]
-
                   text-[var(--foreground)]
                 "
               >
@@ -510,13 +529,9 @@ export default function Landing() {
               <span
                 className="
                   font-mono
-
                   text-[9px]
-
                   leading-none
-
                   tracking-[0.15em]
-
                   text-[var(--foreground-muted)]
                 "
               >
@@ -528,22 +543,16 @@ export default function Landing() {
               className="
                 flex
                 flex-col
-
                 items-end
-
                 gap-1
               "
             >
               <span
                 className="
                   font-mono
-
                   text-[9px]
-
                   leading-none
-
                   tracking-[0.15em]
-
                   text-[var(--foreground-muted)]
                 "
               >
@@ -553,13 +562,9 @@ export default function Landing() {
               <span
                 className="
                   font-mono
-
                   text-[9px]
-
                   leading-none
-
                   tracking-[0.15em]
-
                   text-[var(--foreground-muted)]
                 "
               >
@@ -575,9 +580,7 @@ export default function Landing() {
           <div
             className="
               flex
-
               flex-1
-
               items-center
             "
           >
@@ -585,19 +588,12 @@ export default function Landing() {
               ref={titleRef}
               className="
                 m-0
-
                 max-w-[1400px]
-
                 font-sans
-
                 text-[clamp(4.5rem,15vw,13rem)]
-
                 font-medium
-
                 leading-[0.78]
-
                 tracking-[-0.09em]
-
                 text-[var(--foreground)]
               "
             >
@@ -651,9 +647,7 @@ export default function Landing() {
                   ref={registerLine}
                   className="
                     block
-
                     text-[var(--foreground-muted)]
-
                     will-change-transform
                   "
                 >
@@ -690,15 +684,11 @@ export default function Landing() {
             ref={footerRef}
             className="
               flex
-
               flex-col
-
               gap-8
-
               md:flex-row
               md:items-end
               md:justify-between
-
               will-change-[transform,opacity]
             "
           >
@@ -706,19 +696,12 @@ export default function Landing() {
               ref={descriptionRef}
               className="
                 m-0
-
                 max-w-[390px]
-
                 text-[14px]
-
                 leading-[1.55]
-
                 tracking-[-0.01em]
-
                 text-[var(--foreground-muted)]
-
                 md:text-[15px]
-
                 will-change-[transform,opacity]
               "
             >
@@ -731,48 +714,32 @@ export default function Landing() {
             <div
               className="
                 flex
-
                 items-center
-
                 gap-4
-
                 font-mono
-
                 text-[9px]
-
                 leading-none
-
                 tracking-[0.14em]
-
                 text-[var(--foreground-muted)]
               "
             >
               <span
                 className="
                   relative
-
                   block
-
                   h-px
-
                   w-[44px]
-
                   overflow-hidden
-
                   bg-[var(--border)]
                 "
               >
                 <span
                   className="
                     absolute
-
                     inset-y-0
                     left-0
-
                     w-full
-
                     bg-[var(--foreground)]
-
                     animate-[hero-scroll-line_2.4s_cubic-bezier(0.16,1,0.3,1)_infinite]
                   "
                 />
@@ -792,25 +759,16 @@ export default function Landing() {
         ref={indexRef}
         className="
           absolute
-
           bottom-8
           right-6
-
           z-3
-
           font-mono
-
           text-[9px]
-
           leading-none
-
           tracking-[0.12em]
-
           text-[var(--foreground-subtle)]
-
           md:bottom-12
           md:right-12
-
           will-change-[opacity]
         "
       >
