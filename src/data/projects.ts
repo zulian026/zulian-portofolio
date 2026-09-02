@@ -1,115 +1,112 @@
 export type Project = {
   id: string;
-
-  year: string;
+  slug: string;
 
   title: string;
-
-  description: string;
-
   category: string;
+  year: string;
 
   role: string;
 
-  technologies: string[];
+  description: string;
 
   image: string;
 
+  technologies: string[];
+
   href?: string;
 
-  featured?: boolean;
+  overview?: string;
+
+  challenge?: string;
+
+  approach?: string;
+
+  result?: string;
+
+  gallery?: string[];
 };
 
 export const projects: Project[] = [
   {
-    id: "zero-clicker",
+    id: "project-01",
 
-    year: "2026",
+    slug: "zeroclicker",
 
     title: "ZeroClicker",
 
+    category: "DESKTOP / LINUX",
+
+    year: "2026",
+
+    role: "DESIGN & DEVELOPMENT",
+
     description:
-      "A modern native auto clicker for Linux, designed around performance, simplicity, and a clean desktop experience.",
+      "A modern auto clicker application designed specifically for Linux.",
 
-    category: "DESKTOP",
+    image:
+      "https://images.unsplash.com/photo-1629654297299-c8506221ca97?q=80&w=1200&auto=format&fit=crop",
 
-    role: "PRODUCT / ENGINEERING",
-
-    technologies: ["C++", "Qt", "Linux"],
-
-    image: "/projects/zero-clicker.webp",
+    technologies: ["C++", "Qt", "Wayland", "CMake"],
 
     href: "#",
 
-    featured: true,
+    overview:
+      "ZeroClicker is a native Linux automation tool focused on providing a simple and modern experience for repetitive mouse actions.",
+
+    challenge:
+      "The goal was to create an auto clicker that feels native to the Linux desktop while avoiding unnecessary dependencies and keeping the interface simple.",
+
+    approach:
+      "The application was designed around a lightweight native architecture with a modern Qt interface and careful attention to interaction, responsiveness, and usability.",
+
+    result:
+      "The result is a focused desktop utility with a clean interface and a workflow designed to get users from launch to action quickly.",
+
+    gallery: [
+      "https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=1200&auto=format&fit=crop",
+    ],
   },
 
   {
-    id: "voltify",
+    id: "project-02",
 
-    year: "2026",
+    slug: "voltify",
 
     title: "Voltify",
 
-    description:
-      "A modern digital product focused on delivering a clean and thoughtful user experience.",
-
-    category: "WEB",
-
-    role: "FRONTEND",
-
-    technologies: ["Next.js", "TypeScript", "Tailwind"],
-
-    image: "/projects/voltify.webp",
-
-    href: "#",
-
-    featured: true,
-  },
-
-  {
-    id: "web-analyser",
+    category: "WEB APPLICATION",
 
     year: "2026",
 
-    title: "Web Analyser",
+    role: "DEVELOPMENT",
 
     description:
-      "A web analysis tool for inspecting websites and presenting useful technical information in a focused interface.",
+      "A modern web application focused on delivering a clean digital experience.",
 
-    category: "WEB",
+    image:
+      "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?q=80&w=1200&auto=format&fit=crop",
 
-    role: "FULL STACK",
-
-    technologies: ["Next.js", "TypeScript", "Node.js"],
-
-    image: "/projects/web-analyser.webp",
+    technologies: ["Next.js", "React", "TypeScript"],
 
     href: "#",
 
-    featured: true,
-  },
+    overview:
+      "Voltify is a web project focused on creating a modern and responsive digital experience.",
 
-  {
-    id: "portfolio",
+    challenge:
+      "The project required a clean interface that could scale across different screen sizes while maintaining a consistent visual language.",
 
-    year: "2026",
+    approach:
+      "The interface was built using reusable components and a structured frontend architecture.",
 
-    title: "Personal Portfolio",
+    result:
+      "The final product provides a responsive interface with a clear information hierarchy and reusable design system.",
 
-    description:
-      "A minimal personal portfolio exploring typography, motion, interaction, and modern web technologies.",
-
-    category: "WEB",
-
-    role: "DESIGN / ENGINEERING",
-
-    technologies: ["Next.js", "TypeScript", "GSAP", "Lenis"],
-
-    image: "/projects/portfolio.webp",
-
-    href: "#",
-
-    featured: true,
+    gallery: [
+      "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=1200&auto=format&fit=crop",
+    ],
   },
 ];

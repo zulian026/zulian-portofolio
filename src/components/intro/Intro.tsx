@@ -6,6 +6,8 @@ import gsap from "gsap";
 
 import IntroName from "./IntroName";
 
+const INTRO_STORAGE_KEY = "zyan-intro-completed";
+
 export default function Intro() {
   const rootRef = useRef<HTMLDivElement>(null);
 
@@ -23,6 +25,41 @@ export default function Intro() {
     const root = rootRef.current;
 
     if (!root) {
+      return;
+    }
+
+    /*
+     * =========================================
+     * CHECK INTRO STATUS
+     * =========================================
+     *
+     * Intro hanya dimainkan sekali dalam
+     * satu browser session.
+     *
+     * Jadi:
+     *
+     * / -> Intro
+     * Project -> Back -> /
+     *               -> NO INTRO
+     */
+
+    let introCompleted = false;
+
+    try {
+      introCompleted = sessionStorage.getItem(INTRO_STORAGE_KEY) === "true";
+    } catch {
+      introCompleted = false;
+    }
+
+    /*
+     * Kalau intro sudah pernah selesai,
+     * langsung hilangkan intro.
+     */
+    if (introCompleted) {
+      root.style.visibility = "hidden";
+      root.style.opacity = "0";
+      root.style.pointerEvents = "none";
+
       return;
     }
 
@@ -346,13 +383,6 @@ export default function Intro() {
        *
        * BACKGROUND OPENS
        * =====================================
-       *
-       * Tidak lagi hardcode putih.
-       *
-       * Kita hanya membuat intro
-       * menjadi sedikit transparan
-       * sehingga landing bisa mulai
-       * terasa di belakangnya.
        */
 
       tl.to(root, {
@@ -475,6 +505,17 @@ export default function Intro() {
         ease: "power2.out",
 
         onComplete: () => {
+          /*
+           * IMPORTANT:
+           *
+           * Tandai intro sudah selesai.
+           */
+          try {
+            sessionStorage.setItem(INTRO_STORAGE_KEY, "true");
+          } catch {
+            // Ignore storage errors.
+          }
+
           root.style.visibility = "hidden";
 
           root.style.pointerEvents = "none";
