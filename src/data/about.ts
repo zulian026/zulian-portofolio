@@ -16,28 +16,32 @@ export const aboutData = {
 
   gallery: [
     {
-      image:
-        "https://images.unsplash.com/photo-1629654297299-c8506221ca97?auto=format&fit=crop&w=800&q=80",
+      id: "01",
+      image: "/about/gallery/01.webp",
       label: "LINUX",
+      title: "SYSTEMS & TOOLS",
       alt: "Linux development environment",
     },
     {
-      image:
-        "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=800&q=80",
+      id: "02",
+      image: "/about/gallery/02.webp",
       label: "WORKSPACE",
-      alt: "Development workspace",
+      title: "BUILDING IN DETAIL",
+      alt: "Software development workspace",
     },
     {
-      image:
-        "https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?auto=format&fit=crop&w=800&q=80",
+      id: "03",
+      image: "/about/gallery/03.webp",
       label: "INTERFACE",
-      alt: "Interface design",
+      title: "DIGITAL CRAFT",
+      alt: "Interface design and development",
     },
     {
-      image:
-        "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80",
+      id: "04",
+      image: "/about/gallery/04.webp",
       label: "BUILD",
-      alt: "Software development",
+      title: "FROM IDEA TO SOFTWARE",
+      alt: "Software development process",
     },
   ],
 
