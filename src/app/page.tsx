@@ -4,9 +4,10 @@ import Navbar from "@/components/navbar/Navbar";
 import Work from "@/components/work/Work";
 import SkillsLoop from "@/components/skills/SkillsLoop";
 import About from "@/components/about/About";
-import Stack from "@/components/about/Stack";
 import Contact from "@/components/contact/Contact";
 import Projects from "@/components/project/Project";
+import Footer from "@/components/footer/Footer";
+import Skills from "@/components/about/Skills";
 
 export default function Home() {
   return (
@@ -38,7 +39,7 @@ export default function Home() {
 
       {/* SKILLS */}
 
-      <SkillsLoop />
+      {/*<SkillsLoop />*/}
 
       {/* WORK */}
 
@@ -46,11 +47,13 @@ export default function Home() {
 
       <About />
 
-      <Stack />
+      <Skills />
 
       <Projects />
 
       <Contact />
+
+      <Footer />
 
       {/* INTRO */}
 

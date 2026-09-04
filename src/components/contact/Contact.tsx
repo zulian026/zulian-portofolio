@@ -1,54 +1,127 @@
 "use client";
-
 import { useLayoutEffect, useRef } from "react";
-
 import gsap from "gsap";
-import ScrollTrigger from "gsap/ScrollTrigger";
-
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { contactData } from "@/data/contact";
 gsap.registerPlugin(ScrollTrigger);
 
 export default function Contact() {
-  const sectionRef = useRef<HTMLElement>(null);
+  const sectionRef = useRef<HTMLElement | null>(null);
 
   useLayoutEffect(() => {
     const section = sectionRef.current;
+    if (!section) return;
 
-    if (!section) {
-      return;
-    }
-
-    const reducedMotion = window.matchMedia(
+    const prefersReducedMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches;
 
-    if (reducedMotion) {
-      return;
-    }
-
     const ctx = gsap.context(() => {
-      const elements = section.querySelectorAll(".contact-reveal");
+      const revealElements = gsap.utils.toArray<HTMLElement>(".contact-reveal");
+      const headingLines = gsap.utils.toArray<HTMLElement>(
+        ".contact-heading-line",
+      );
+      const headingInner = gsap.utils.toArray<HTMLElement>(
+        ".contact-heading-inner",
+      );
+      const socialItems = gsap.utils.toArray<HTMLElement>(".contact-social");
+      const email = section.querySelector<HTMLElement>(".contact-email");
 
-      elements.forEach((element, index) => {
-        gsap.fromTo(
-          element,
-          {
-            y: 50,
-            opacity: 0,
-          },
-          {
-            y: 0,
+      if (prefersReducedMotion) {
+        gsap.set([revealElements, socialItems], {
+          opacity: 1,
+          y: 0,
+        });
+        gsap.set(headingInner, {
+          yPercent: 0,
+        });
+        if (email) {
+          gsap.set(email, {
             opacity: 1,
-            duration: 1,
-            delay: index * 0.08,
-            ease: "power3.out",
-            scrollTrigger: {
-              trigger: element,
-              start: "top 85%",
-              once: true,
-            },
-          },
-        );
+            y: 0,
+          });
+        }
+        return;
+      }
+
+      gsap.set(revealElements, {
+        opacity: 0,
+        y: 20,
       });
+
+      // heading now animates via an inner span (clip-path reveal on the
+      // parent overflow-hidden wrapper), which reads cleaner than a fade
+      gsap.set(headingInner, {
+        yPercent: 110,
+      });
+
+      gsap.set(socialItems, {
+        opacity: 0,
+        y: 16,
+      });
+
+      if (email) {
+        gsap.set(email, {
+          opacity: 0,
+          y: 24,
+        });
+      }
+
+      const timeline = gsap.timeline({
+        scrollTrigger: {
+          trigger: section,
+          start: "top 72%",
+          once: true,
+        },
+      });
+
+      timeline.to(
+        revealElements,
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.8,
+          stagger: 0.08,
+          ease: "power3.out",
+        },
+        0,
+      );
+
+      timeline.to(
+        headingInner,
+        {
+          yPercent: 0,
+          duration: 1.1,
+          stagger: 0.1,
+          ease: "power4.out",
+        },
+        0.1,
+      );
+
+      if (email) {
+        timeline.to(
+          email,
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.8,
+            ease: "power3.out",
+          },
+          0.45,
+        );
+      }
+
+      timeline.to(
+        socialItems,
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.7,
+          stagger: 0.08,
+          ease: "power3.out",
+        },
+        0.55,
+      );
     }, section);
 
     return () => {
@@ -63,412 +136,348 @@ export default function Contact() {
       className="
         relative
         w-full
+        overflow-hidden
         bg-[var(--background)]
         text-[var(--foreground)]
       "
     >
       <div
         className="
+          relative
           mx-auto
-          max-w-[1400px]
-          px-6
-          py-28
+          flex
+          min-h-[85svh]
+          w-full
+          max-w-[1440px]
+          flex-col
+          px-5
+          py-20
           md:px-10
-          md:py-40
+          md:py-28
+          lg:min-h-[90svh]
           lg:px-16
-          lg:py-52
+          lg:py-32
         "
       >
-        {/* =====================================
+        {/* ─────────────────────────────────────
             HEADER
-        ===================================== */}
-
+        ───────────────────────────────────── */}
         <div
           className="
             contact-reveal
-            mb-20
             flex
             items-center
             justify-between
-            border-t
+            border-b
             border-[var(--border)]
-            pt-4
-            md:mb-28
+            pb-5
           "
         >
           <span
             className="
               font-mono
-              text-[9px]
-              tracking-[0.16em]
+              text-[10px]
               uppercase
+              tracking-[0.16em]
               text-[var(--foreground-muted)]
             "
           >
-            CONTACT
+            {contactData.label}
           </span>
-
           <span
             className="
               font-mono
-              text-[9px]
+              text-[10px]
               tracking-[0.16em]
-              uppercase
-              text-[var(--foreground-muted)]
+              text-[var(--foreground-subtle)]
             "
           >
-            04 / 04
+            05
           </span>
         </div>
 
-        {/* =====================================
+        {/* ─────────────────────────────────────
             MAIN
-        ===================================== */}
-
+        ───────────────────────────────────── */}
         <div
           className="
+            mt-auto
             grid
-            gap-16
-            md:grid-cols-[1.3fr_0.7fr]
-            md:gap-20
-            lg:gap-32
+            grid-cols-1
+            gap-14
+            pt-24
+            md:pt-32
+            lg:grid-cols-12
+            lg:gap-10
           "
         >
-          {/* ===================================
-              TITLE
-          =================================== */}
-
-          <div className="contact-reveal">
-            <p
-              className="
-                mb-6
-                font-mono
-                text-[9px]
-                tracking-[0.16em]
-                uppercase
-                text-[var(--foreground-muted)]
-              "
-            >
-              HAVE A PROJECT IN MIND?
-            </p>
-
+          {/* Heading */}
+          <div className="lg:col-span-8">
             <h2
               className="
-                m-0
-                font-sans
-                text-[clamp(3.5rem,9vw,9rem)]
                 font-medium
                 leading-[0.84]
-                tracking-[-0.07em]
-                text-[var(--foreground)]
+                tracking-[-0.065em]
+                text-[clamp(3.5rem,9vw,9rem)]
               "
             >
-              Let&apos;s make
-              <br />
-              something.
+              <span className="contact-heading-line block overflow-hidden">
+                <span className="contact-heading-inner block">
+                  {contactData.heading.line1}
+                </span>
+              </span>
+              <span className="contact-heading-line block overflow-hidden">
+                <span className="contact-heading-inner block">
+                  {contactData.heading.line2}
+                </span>
+              </span>
+              <span className="contact-heading-line block overflow-hidden">
+                <span className="contact-heading-inner block">
+                  {contactData.heading.line3}
+                </span>
+              </span>
             </h2>
           </div>
 
-          {/* ===================================
-              DESCRIPTION
-          =================================== */}
-
+          {/* Description */}
           <div
             className="
-              contact-reveal
               flex
               flex-col
               justify-end
+              lg:col-span-4
+              lg:pb-2
             "
           >
             <p
               className="
-                max-w-[400px]
-                text-base
-                leading-[1.8]
+                contact-reveal
+                max-w-[380px]
+                text-sm
+                leading-[1.9]
                 text-[var(--foreground-muted)]
-                md:text-lg
+                md:text-base
               "
             >
-              Whether you have an idea, a project, or just want to say hello,
-              feel free to reach out.
+              {contactData.description}
             </p>
+          </div>
+        </div>
 
-            <a
-              href="mailto:hello@example.com"
+        {/* ─────────────────────────────────────
+            BOTTOM
+        ───────────────────────────────────── */}
+        <div
+          className="
+            mt-20
+            grid
+            grid-cols-1
+            gap-10
+            border-t
+            border-[var(--border)]
+            pt-8
+            md:mt-28
+            md:grid-cols-12
+            md:gap-10
+          "
+        >
+          {/* Email */}
+          <div className="md:col-span-7">
+            <span
               className="
+                contact-reveal
+                mb-4
+                block
+                font-mono
+                text-[9px]
+                uppercase
+                tracking-[0.16em]
+                text-[var(--foreground-subtle)]
+              "
+            >
+              GET IN TOUCH
+            </span>
+            <a
+              href={`mailto:${contactData.email}`}
+              data-cursor="mail"
+              className="
+                contact-email
                 group
-                mt-10
                 inline-flex
                 w-fit
                 items-center
                 gap-4
-                border-b
-                border-[var(--border)]
-                pb-3
-                font-mono
-                text-[10px]
-                tracking-[0.14em]
-                uppercase
+                text-lg
+                tracking-[-0.02em]
                 text-[var(--foreground)]
-                no-underline
-                transition-opacity
+                transition-colors
                 duration-500
-                hover:opacity-60
+                md:text-2xl
               "
             >
-              <span>hello@example.com</span>
-
               <span
                 className="
-                  transition-transform
+                  relative
+                  after:absolute
+                  after:bottom-[-4px]
+                  after:left-0
+                  after:h-px
+                  after:w-full
+                  after:origin-left
+                  after:scale-x-0
+                  after:bg-current
+                  after:transition-transform
+                  after:duration-500
+                  after:ease-out
+                  group-hover:after:scale-x-100
+                "
+              >
+                {contactData.email}
+              </span>
+              <span
+                className="
+                  inline-flex
+                  h-7
+                  w-7
+                  items-center
+                  justify-center
+                  rounded-full
+                  border
+                  border-[var(--border)]
+                  text-sm
+                  text-[var(--foreground-muted)]
+                  transition-all
                   duration-500
-                  group-hover:translate-x-1
+                  ease-out
+                  group-hover:-translate-y-0.5
+                  group-hover:translate-x-0.5
+                  group-hover:border-[var(--foreground)]
+                  group-hover:text-[var(--foreground)]
                 "
               >
                 ↗
               </span>
             </a>
           </div>
+
+          {/* Socials */}
+          <div className="md:col-span-5">
+            <span
+              className="
+                contact-reveal
+                mb-4
+                block
+                font-mono
+                text-[9px]
+                uppercase
+                tracking-[0.16em]
+                text-[var(--foreground-subtle)]
+              "
+            >
+              SOCIALS
+            </span>
+            <div className="flex flex-col">
+              {contactData.socials.map((social, index) => (
+                <a
+                  key={social.label}
+                  href={social.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  data-cursor="open"
+                  className="
+                    contact-social
+                    group
+                    relative
+                    flex
+                    items-center
+                    justify-between
+                    overflow-hidden
+                    border-b
+                    border-[var(--border)]
+                    px-1
+                    py-3
+                    text-sm
+                    text-[var(--foreground)]
+                  "
+                >
+                  {/* highlight sweep, sits behind content */}
+                  <span
+                    aria-hidden
+                    className="
+                      pointer-events-none
+                      absolute
+                      inset-0
+                      -translate-x-full
+                      bg-[var(--foreground)]/[0.04]
+                      transition-transform
+                      duration-500
+                      ease-out
+                      group-hover:translate-x-0
+                    "
+                  />
+                  <span
+                    className="
+                      relative
+                      transition-transform
+                      duration-500
+                      ease-out
+                      group-hover:translate-x-1
+                    "
+                  >
+                    {social.label}
+                  </span>
+                  <span
+                    className="
+                      relative
+                      flex
+                      items-center
+                      gap-3
+                      font-mono
+                      text-[9px]
+                      text-[var(--foreground-subtle)]
+                    "
+                  >
+                    {String(index + 1).padStart(2, "0")}
+                    <span
+                      className="
+                        inline-block
+                        transition-transform
+                        duration-500
+                        ease-out
+                        group-hover:translate-x-1
+                        group-hover:-translate-y-1
+                      "
+                    >
+                      ↗
+                    </span>
+                  </span>
+                </a>
+              ))}
+            </div>
+          </div>
         </div>
 
-        {/* =====================================
-            SOCIAL LINKS
-        ===================================== */}
-
+        {/* ─────────────────────────────────────
+            FOOTER NOTE
+        ───────────────────────────────────── */}
         <div
           className="
             contact-reveal
-            mt-28
-            grid
-            grid-cols-2
-            border-t
-            border-[var(--border)]
-            md:mt-40
-            md:grid-cols-4
+            mt-10
+            flex
+            items-center
+            justify-between
+            font-mono
+            text-[9px]
+            uppercase
+            tracking-[0.14em]
+            text-[var(--foreground-subtle)]
           "
         >
-          {/* GITHUB */}
-
-          <a
-            href="#"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="
-              group
-              border-b
-              border-r
-              border-[var(--border)]
-              py-5
-              font-mono
-              text-[9px]
-              tracking-[0.14em]
-              uppercase
-              text-[var(--foreground)]
-              no-underline
-              opacity-60
-              transition-opacity
-              duration-500
-              hover:opacity-100
-              md:border-b-0
-            "
-          >
-            <span>GitHub</span>
-
-            <span
-              className="
-                ml-3
-                inline-block
-                transition-transform
-                duration-500
-                group-hover:translate-x-1
-              "
-            >
-              ↗
-            </span>
-          </a>
-
-          {/* LINKEDIN */}
-
-          <a
-            href="#"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="
-              group
-              border-b
-              border-[var(--border)]
-              px-5
-              py-5
-              font-mono
-              text-[9px]
-              tracking-[0.14em]
-              uppercase
-              text-[var(--foreground)]
-              no-underline
-              opacity-60
-              transition-opacity
-              duration-500
-              hover:opacity-100
-              md:border-b-0
-              md:border-r
-            "
-          >
-            <span>LinkedIn</span>
-
-            <span
-              className="
-                ml-3
-                inline-block
-                transition-transform
-                duration-500
-                group-hover:translate-x-1
-              "
-            >
-              ↗
-            </span>
-          </a>
-
-          {/* INSTAGRAM */}
-
-          <a
-            href="#"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="
-              group
-              border-r
-              border-[var(--border)]
-              py-5
-              font-mono
-              text-[9px]
-              tracking-[0.14em]
-              uppercase
-              text-[var(--foreground)]
-              no-underline
-              opacity-60
-              transition-opacity
-              duration-500
-              hover:opacity-100
-            "
-          >
-            <span>Instagram</span>
-
-            <span
-              className="
-                ml-3
-                inline-block
-                transition-transform
-                duration-500
-                group-hover:translate-x-1
-              "
-            >
-              ↗
-            </span>
-          </a>
-
-          {/* X */}
-
-          <a
-            href="#"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="
-              group
-              px-5
-              py-5
-              font-mono
-              text-[9px]
-              tracking-[0.14em]
-              uppercase
-              text-[var(--foreground)]
-              no-underline
-              opacity-60
-              transition-opacity
-              duration-500
-              hover:opacity-100
-            "
-          >
-            <span>X / Twitter</span>
-
-            <span
-              className="
-                ml-3
-                inline-block
-                transition-transform
-                duration-500
-                group-hover:translate-x-1
-              "
-            >
-              ↗
-            </span>
-          </a>
+          <span>{contactData.footerNote}</span>
+          <span>2026</span>
         </div>
       </div>
-
-      {/* =====================================
-          FOOTER
-      ===================================== */}
-
-      <footer
-        className="
-          border-t
-          border-[var(--border)]
-        "
-      >
-        <div
-          className="
-            mx-auto
-            flex
-            max-w-[1400px]
-            flex-col
-            gap-3
-            px-6
-            py-6
-            font-mono
-            text-[8px]
-            tracking-[0.12em]
-            uppercase
-            text-[var(--foreground-muted)]
-            md:flex-row
-            md:items-center
-            md:justify-between
-            md:px-10
-            lg:px-16
-          "
-        >
-          <span>© {new Date().getFullYear()} ZYAN DEV</span>
-
-          <span>DESIGNED &amp; BUILT WITH CARE</span>
-
-          <button
-            type="button"
-            onClick={() => {
-              window.scrollTo({
-                top: 0,
-                behavior: "smooth",
-              });
-            }}
-            className="
-              w-fit
-              cursor-pointer
-              border-0
-              bg-transparent
-              p-0
-              font-mono
-              text-[8px]
-              tracking-[0.12em]
-              uppercase
-              text-[var(--foreground)]
-              transition-opacity
-              duration-300
-              hover:opacity-60
-            "
-          >
-            BACK TO TOP ↑
-          </button>
-        </div>
-      </footer>
     </section>
   );
 }

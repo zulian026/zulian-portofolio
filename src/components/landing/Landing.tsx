@@ -1,778 +1,443 @@
 "use client";
-
 import { useLayoutEffect, useRef } from "react";
-
 import gsap from "gsap";
-
-import { useLenis } from "lenis/react";
+import { heroData } from "@/data/hero";
 
 export default function Landing() {
-  const heroRef = useRef<HTMLElement>(null);
-
-  const scrollContentRef = useRef<HTMLDivElement>(null);
-
-  const entranceRef = useRef<HTMLDivElement>(null);
-
-  const titleRef = useRef<HTMLHeadingElement>(null);
-
-  const titleLinesRef = useRef<HTMLSpanElement[]>([]);
-
-  const metaRef = useRef<HTMLDivElement>(null);
-
-  const descriptionRef = useRef<HTMLParagraphElement>(null);
-
-  const footerRef = useRef<HTMLDivElement>(null);
-
-  const indexRef = useRef<HTMLDivElement>(null);
-
-  /*
-   * =========================================
-   * HERO ENTRANCE
-   * =========================================
-   */
+  const sectionRef = useRef<HTMLElement | null>(null);
 
   useLayoutEffect(() => {
-    const hero = heroRef.current;
+    const section = sectionRef.current;
+    if (!section) return;
 
-    const entrance = entranceRef.current;
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
 
-    const lines = titleLinesRef.current;
+    const ctx = gsap.context(() => {
+      const letters = gsap.utils.toArray<HTMLElement>(".hero-letter");
+      const heroTopMeta = section.querySelector<HTMLElement>(".hero-top-meta");
+      const heroMain = section.querySelector<HTMLElement>(".hero-main");
+      const heroStatus = section.querySelector<HTMLElement>(".hero-status");
+      const heroScroll = section.querySelector<HTMLElement>(".hero-scroll");
+      const heroRole = section.querySelector<HTMLElement>(".hero-role");
+      const heroDescription =
+        section.querySelector<HTMLElement>(".hero-description");
+      const heroFocus = section.querySelector<HTMLElement>(".hero-focus");
 
-    const meta = metaRef.current;
-
-    const description = descriptionRef.current;
-
-    const footer = footerRef.current;
-
-    const index = indexRef.current;
-
-    if (
-      !hero ||
-      !entrance ||
-      !lines.length ||
-      !meta ||
-      !description ||
-      !footer ||
-      !index
-    ) {
-      return;
-    }
-
-    /*
-     * =====================================
-     * INITIAL
-     * =====================================
-     */
-
-    gsap.set(lines, {
-      y: "115%",
-    });
-
-    gsap.set(meta, {
-      y: 25,
-      opacity: 0,
-    });
-
-    gsap.set(description, {
-      y: 30,
-      opacity: 0,
-    });
-
-    gsap.set(footer, {
-      y: 25,
-      opacity: 0,
-    });
-
-    gsap.set(index, {
-      opacity: 0,
-    });
-
-    /*
-     * =====================================
-     * INTRO DETECTION
-     * =====================================
-     *
-     * Explicit HTMLElement generic supaya
-     * TypeScript mengenali .style.
-     */
-
-    const intro = document.querySelector<HTMLElement>(".intro");
-
-    let entranceTimeline: gsap.core.Timeline | null = null;
-
-    let started = false;
-
-    /*
-     * =====================================
-     * PLAY ENTRANCE
-     * =====================================
-     */
-
-    const playEntrance = () => {
-      if (entranceTimeline) {
+      if (
+        !heroTopMeta ||
+        !heroMain ||
+        !heroStatus ||
+        !heroScroll ||
+        !heroRole ||
+        !heroDescription ||
+        !heroFocus
+      ) {
         return;
       }
 
-      entranceTimeline = gsap.timeline();
+      /* ─────────────────────────────────────────
+         REDUCED MOTION
+      ───────────────────────────────────────── */
+      if (prefersReducedMotion) {
+        gsap.set(
+          [
+            letters,
+            heroTopMeta,
+            heroMain,
+            heroStatus,
+            heroScroll,
+            heroRole,
+            heroDescription,
+            heroFocus,
+          ],
+          { opacity: 1, y: 0 },
+        );
+        return;
+      }
 
-      /*
-       * TITLE
-       */
+      /* ─────────────────────────────────────────
+         INITIAL STATE
+      ───────────────────────────────────────── */
+      gsap.set(letters, { opacity: 0, y: 72 });
+      gsap.set(heroTopMeta, { opacity: 0, y: 14 });
+      gsap.set(heroRole, { opacity: 0, y: 18 });
+      gsap.set(heroDescription, { opacity: 0, y: 20 });
+      gsap.set(heroFocus, { opacity: 0, y: 16 });
+      gsap.set(heroStatus, { opacity: 0, y: 12 });
+      gsap.set(heroScroll, { opacity: 0, y: 10 });
 
-      entranceTimeline.to(lines, {
-        y: "0%",
-
-        duration: 0.9,
-
-        stagger: 0.08,
-
-        ease: "power4.out",
+      /* ─────────────────────────────────────────
+         ENTRANCE TIMELINE
+      ───────────────────────────────────────── */
+      const timeline = gsap.timeline({
+        delay: 0.12,
+        defaults: { ease: "power3.out" },
       });
 
-      /*
-       * META
-       */
+      // Top meta
+      timeline.to(heroTopMeta, { opacity: 1, y: 0, duration: 0.75 }, 0);
 
-      entranceTimeline.to(
-        meta,
+      // Name letters
+      timeline.to(
+        letters,
         {
-          y: 0,
-
           opacity: 1,
-
-          duration: 0.65,
-
-          ease: "power3.out",
+          y: 0,
+          duration: 0.95,
+          stagger: 0.028,
+          ease: "power4.out",
         },
-        "-=0.6",
+        0.05,
       );
 
-      /*
-       * DESCRIPTION
-       */
+      // Role
+      timeline.to(heroRole, { opacity: 1, y: 0, duration: 0.75 }, "-=0.55");
 
-      entranceTimeline.to(
-        description,
-        {
-          y: 0,
-
-          opacity: 1,
-
-          duration: 0.7,
-
-          ease: "power3.out",
-        },
-        "-=0.45",
-      );
-
-      /*
-       * FOOTER
-       */
-
-      entranceTimeline.to(
-        footer,
-        {
-          y: 0,
-
-          opacity: 1,
-
-          duration: 0.7,
-
-          ease: "power3.out",
-        },
+      // Description
+      timeline.to(
+        heroDescription,
+        { opacity: 1, y: 0, duration: 0.8 },
         "-=0.5",
       );
 
-      /*
-       * INDEX
-       */
+      // Focus tags
+      timeline.to(heroFocus, { opacity: 1, y: 0, duration: 0.7 }, "-=0.45");
 
-      entranceTimeline.to(
-        index,
-        {
-          opacity: 1,
+      // Status
+      timeline.to(heroStatus, { opacity: 1, y: 0, duration: 0.65 }, "-=0.35");
 
-          duration: 0.5,
+      // Scroll indicator
+      timeline.to(heroScroll, { opacity: 1, y: 0, duration: 0.65 }, "-=0.25");
 
-          ease: "power2.out",
-        },
-        "-=0.45",
-      );
-    };
+      /* ─────────────────────────────────────────
+         SCROLL PARALLAX
+      ───────────────────────────────────────── */
+      const updateHeroScroll = () => {
+        const progress = Math.min(
+          Math.max(window.scrollY / (window.innerHeight * 0.85), 0),
+          1,
+        );
 
-    /*
-     * =====================================
-     * NO INTRO
-     * =====================================
-     */
+        gsap.set(heroMain, {
+          y: progress * -64,
+          opacity: 1 - progress * 0.32,
+        });
 
-    if (!intro) {
-      started = true;
+        gsap.set(heroTopMeta, {
+          y: progress * -18,
+          opacity: 1 - progress,
+        });
 
-      playEntrance();
-    }
+        gsap.set(heroStatus, {
+          y: progress * 12,
+          opacity: 1 - progress * 0.8,
+        });
 
-    /*
-     * =====================================
-     * INTRO ALREADY FINISHED
-     * =====================================
-     */
+        gsap.set(heroScroll, {
+          y: progress * 24,
+          opacity: 1 - progress,
+        });
+      };
 
-    if (intro && intro.style.visibility === "hidden") {
-      started = true;
+      window.addEventListener("scroll", updateHeroScroll, { passive: true });
+      updateHeroScroll();
 
-      playEntrance();
-    }
+      return () => {
+        window.removeEventListener("scroll", updateHeroScroll);
+      };
+    }, section);
 
-    /*
-     * =====================================
-     * WATCH INTRO
-     * =====================================
-     *
-     * Observer dibuat hanya jika intro
-     * memang ada.
-     *
-     * Dengan cara ini observer tidak pernah
-     * memiliki tipe null di dalam callback.
-     */
-
-    let observer: MutationObserver | undefined;
-
-    if (intro && !started) {
-      observer = new MutationObserver(() => {
-        if (started || intro.style.visibility !== "hidden") {
-          return;
-        }
-
-        started = true;
-
-        playEntrance();
-
-        observer?.disconnect();
-      });
-
-      observer.observe(intro, {
-        attributes: true,
-
-        attributeFilter: ["style"],
-      });
-    }
-
-    /*
-     * =====================================
-     * CLEANUP
-     * =====================================
-     */
-
-    return () => {
-      observer?.disconnect();
-
-      entranceTimeline?.kill();
-    };
+    return () => ctx.revert();
   }, []);
-
-  /*
-   * =========================================
-   * MOUSE PARALLAX
-   * =========================================
-   */
-
-  useLayoutEffect(() => {
-    const hero = heroRef.current;
-
-    const entrance = entranceRef.current;
-
-    if (!hero || !entrance) {
-      return;
-    }
-
-    /*
-     * Don't run mouse interaction
-     * on touch devices.
-     */
-
-    const isTouch = window.matchMedia("(pointer: coarse)").matches;
-
-    if (isTouch) {
-      return;
-    }
-
-    const target = {
-      x: 0,
-      y: 0,
-    };
-
-    const current = {
-      x: 0,
-      y: 0,
-    };
-
-    const update = () => {
-      current.x += (target.x - current.x) * 0.06;
-
-      current.y += (target.y - current.y) * 0.06;
-
-      gsap.set(entrance, {
-        x: current.x,
-        y: current.y,
-      });
-    };
-
-    const onMouseMove = (event: MouseEvent) => {
-      const x = event.clientX / window.innerWidth - 0.5;
-
-      const y = event.clientY / window.innerHeight - 0.5;
-
-      target.x = x * 10;
-
-      target.y = y * 7;
-    };
-
-    window.addEventListener("mousemove", onMouseMove, {
-      passive: true,
-    });
-
-    gsap.ticker.add(update);
-
-    return () => {
-      window.removeEventListener("mousemove", onMouseMove);
-
-      gsap.ticker.remove(update);
-    };
-  }, []);
-
-  /*
-   * =========================================
-   * LENIS SCROLL
-   * =========================================
-   */
-
-  useLenis((lenis) => {
-    const scrollContent = scrollContentRef.current;
-
-    const meta = metaRef.current;
-
-    const description = descriptionRef.current;
-
-    const footer = footerRef.current;
-
-    const index = indexRef.current;
-
-    if (!scrollContent || !meta || !description || !footer || !index) {
-      return;
-    }
-
-    const viewport = window.innerHeight;
-
-    const progress = Math.max(0, Math.min(1, lenis.scroll / (viewport * 0.8)));
-
-    /*
-     * =====================================
-     * HERO PARALLAX
-     * =====================================
-     */
-
-    const contentY = progress * -75;
-
-    gsap.set(scrollContent, {
-      y: contentY,
-    });
-
-    /*
-     * =====================================
-     * META
-     * =====================================
-     */
-
-    gsap.set(meta, {
-      opacity: Math.max(0, 1 - progress * 1.4),
-    });
-
-    /*
-     * =====================================
-     * DESCRIPTION
-     * =====================================
-     */
-
-    gsap.set(description, {
-      opacity: Math.max(0, 1 - progress * 1.15),
-    });
-
-    /*
-     * =====================================
-     * FOOTER
-     * =====================================
-     */
-
-    gsap.set(footer, {
-      opacity: Math.max(0, 1 - progress * 1.35),
-    });
-
-    /*
-     * =====================================
-     * INDEX
-     * =====================================
-     */
-
-    gsap.set(index, {
-      opacity: Math.max(0, 1 - progress * 1.5),
-    });
-  });
-
-  /*
-   * =========================================
-   * TITLE REF
-   * =========================================
-   */
-
-  const registerLine = (element: HTMLSpanElement | null) => {
-    if (element && !titleLinesRef.current.includes(element)) {
-      titleLinesRef.current.push(element);
-    }
-  };
-
-  /*
-   * =========================================
-   * RENDER
-   * =========================================
-   */
 
   return (
     <section
-      ref={heroRef}
-      id="hero"
+      ref={sectionRef}
+      id="home"
       className="
         relative
-        min-h-screen
-        w-full
+        min-h-[100svh]
         overflow-hidden
         bg-[var(--background)]
         text-[var(--foreground)]
       "
     >
-      {/* =====================================
-          SCROLL CONTENT
-      ===================================== */}
+      {/* Subtle decorative accent — pure solid blur, no gradient */}
+      <div
+        aria-hidden
+        className="
+          pointer-events-none
+          absolute
+          left-1/2
+          top-[-10%]
+          h-[480px]
+          w-[720px]
+          -translate-x-1/2
+          rounded-full
+          bg-[var(--foreground)]/[0.035]
+          blur-[110px]
+        "
+      />
 
       <div
-        ref={scrollContentRef}
         className="
           relative
-          min-h-screen
+          mx-auto
+          flex
+          min-h-[100svh]
           w-full
-          will-change-transform
+          max-w-[1440px]
+          flex-col
+          px-5
+          pb-8
+          pt-28
+          md:px-10
+          md:pb-10
+          md:pt-32
+          lg:px-16
+          lg:pb-12
+          lg:pt-36
         "
       >
-        {/* ===================================
-            ENTRANCE
-        =================================== */}
-
+        {/* ─────────────────────────────────────
+            TOP META
+        ───────────────────────────────────── */}
         <div
-          ref={entranceRef}
           className="
-            relative
+            hero-top-meta
             flex
-            min-h-screen
-            w-full
-            flex-col
+            items-center
             justify-between
-            px-6
-            pb-8
-            pt-28
-            md:px-12
-            md:pb-12
-            md:pt-[160px]
-            will-change-transform
+            font-mono
+            text-[10px]
+            uppercase
+            tracking-[0.16em]
+            text-[var(--foreground-subtle)]
           "
         >
-          {/* =================================
-              META
-          ================================= */}
+          <span>{heroData.availability}</span>
+          <span>{heroData.year}</span>
+        </div>
 
-          <div
-            ref={metaRef}
-            className="
-              absolute
-              left-6
-              right-6
-              top-[104px]
-              z-2
-              flex
-              items-start
-              justify-between
-              md:left-12
-              md:right-12
-              md:top-[118px]
-              will-change-[transform,opacity]
-            "
-          >
-            <div
-              className="
-                flex
-                flex-col
-                gap-1
-              "
-            >
-              <span
-                className="
-                  font-mono
-                  text-[9px]
-                  font-medium
-                  leading-none
-                  tracking-[0.15em]
-                  text-[var(--foreground)]
-                "
-              >
-                SOFTWARE
-              </span>
-
-              <span
-                className="
-                  font-mono
-                  text-[9px]
-                  leading-none
-                  tracking-[0.15em]
-                  text-[var(--foreground-muted)]
-                "
-              >
-                ENGINEER
-              </span>
-            </div>
-
-            <div
-              className="
-                flex
-                flex-col
-                items-end
-                gap-1
-              "
-            >
-              <span
-                className="
-                  font-mono
-                  text-[9px]
-                  leading-none
-                  tracking-[0.15em]
-                  text-[var(--foreground-muted)]
-                "
-              >
-                2026
-              </span>
-
-              <span
-                className="
-                  font-mono
-                  text-[9px]
-                  leading-none
-                  tracking-[0.15em]
-                  text-[var(--foreground-muted)]
-                "
-              >
-                INDONESIA
-              </span>
-            </div>
-          </div>
-
-          {/* =================================
-              TITLE
-          ================================= */}
-
-          <div
-            className="
-              flex
-              flex-1
-              items-center
-            "
-          >
+        {/* ─────────────────────────────────────
+            MAIN HERO
+        ───────────────────────────────────── */}
+        <div
+          className="
+            hero-main
+            mt-auto
+            grid
+            grid-cols-1
+            gap-12
+            pb-12
+            md:grid-cols-[1fr_280px]
+            md:items-end
+            md:gap-14
+            md:pb-16
+            lg:grid-cols-[1fr_340px]
+            lg:gap-16
+          "
+        >
+          {/* NAME */}
+          <div>
             <h1
-              ref={titleRef}
               className="
-                m-0
-                max-w-[1400px]
-                font-sans
-                text-[clamp(4.5rem,15vw,13rem)]
                 font-medium
                 leading-[0.78]
-                tracking-[-0.09em]
-                text-[var(--foreground)]
+                tracking-[-0.075em]
               "
             >
-              {/* LINE 1 */}
-
               <span
                 className="
                   block
                   overflow-hidden
+                  text-[clamp(4.25rem,12.5vw,11.5rem)]
                 "
               >
-                <span
-                  ref={registerLine}
-                  className="
-                    block
-                    will-change-transform
-                  "
-                >
-                  I DESIGN
-                </span>
+                {heroData.name.first.split("").map((letter, index) => (
+                  <span
+                    key={`first-${letter}-${index}`}
+                    className="hero-letter inline-block will-change-transform"
+                  >
+                    {letter === " " ? "\u00A0" : letter}
+                  </span>
+                ))}
               </span>
 
-              {/* LINE 2 */}
-
               <span
                 className="
                   block
                   overflow-hidden
+                  text-[clamp(4.25rem,12.5vw,11.5rem)]
                 "
               >
-                <span
-                  ref={registerLine}
-                  className="
-                    block
-                    will-change-transform
-                  "
-                >
-                  &amp; BUILD
-                </span>
-              </span>
-
-              {/* LINE 3 */}
-
-              <span
-                className="
-                  block
-                  overflow-hidden
-                "
-              >
-                <span
-                  ref={registerLine}
-                  className="
-                    block
-                    text-[var(--foreground-muted)]
-                    will-change-transform
-                  "
-                >
-                  DIGITAL
-                </span>
-              </span>
-
-              {/* LINE 4 */}
-
-              <span
-                className="
-                  block
-                  overflow-hidden
-                "
-              >
-                <span
-                  ref={registerLine}
-                  className="
-                    block
-                    will-change-transform
-                  "
-                >
-                  EXPERIENCES.
-                </span>
+                {heroData.name.last.split("").map((letter, index) => (
+                  <span
+                    key={`last-${letter}-${index}`}
+                    className="hero-letter inline-block will-change-transform"
+                  >
+                    {letter === " " ? "\u00A0" : letter}
+                  </span>
+                ))}
               </span>
             </h1>
           </div>
 
-          {/* =================================
-              FOOTER
-          ================================= */}
-
-          <div
-            ref={footerRef}
-            className="
-              flex
-              flex-col
-              gap-8
-              md:flex-row
-              md:items-end
-              md:justify-between
-              will-change-[transform,opacity]
-            "
-          >
-            <p
-              ref={descriptionRef}
-              className="
-                m-0
-                max-w-[390px]
-                text-[14px]
-                leading-[1.55]
-                tracking-[-0.01em]
-                text-[var(--foreground-muted)]
-                md:text-[15px]
-                will-change-[transform,opacity]
-              "
-            >
-              Thoughtful software and digital experiences built with clarity,
-              purpose, and attention to detail.
-            </p>
-
-            {/* SCROLL INDICATOR */}
-
+          {/* RIGHT INFORMATION */}
+          <div className="pb-1 md:pb-2">
+            {/* ROLE */}
             <div
               className="
-                flex
-                items-center
-                gap-4
+                hero-role
+                mb-7
                 font-mono
-                text-[9px]
-                leading-none
-                tracking-[0.14em]
+                text-[10px]
+                uppercase
+                tracking-[0.16em]
                 text-[var(--foreground-muted)]
+              "
+            >
+              {heroData.role}
+            </div>
+
+            {/* DESCRIPTION */}
+            <p
+              className="
+                hero-description
+                max-w-[340px]
+                text-sm
+                leading-[1.85]
+                text-[var(--foreground-muted)]
+                md:text-[15px]
+              "
+            >
+              {heroData.description}
+            </p>
+
+            {/* FOCUS */}
+            <div
+              className="
+                hero-focus
+                mt-8
+                flex
+                flex-wrap
+                items-center
+                gap-x-3
+                gap-y-2
+              "
+            >
+              {heroData.focus.map((item, index) => (
+                <span
+                  key={item}
+                  className="
+                    flex
+                    items-center
+                    gap-3
+                    font-mono
+                    text-[10px]
+                    uppercase
+                    tracking-[0.14em]
+                    text-[var(--foreground-subtle)]
+                  "
+                >
+                  {item}
+                  {index < heroData.focus.length - 1 && (
+                    <span className="h-px w-3.5 bg-[var(--border)]" />
+                  )}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* ─────────────────────────────────────
+            STATUS
+        ───────────────────────────────────── */}
+        <div
+          className="
+            hero-status
+            mb-6
+            flex
+            items-center
+            justify-between
+            font-mono
+            text-[10px]
+            uppercase
+            tracking-[0.14em]
+            text-[var(--foreground-subtle)]
+            md:mb-8
+          "
+        >
+          <div className="flex items-center gap-3">
+            <span
+              className="
+                relative
+                flex
+                h-1.5
+                w-1.5
               "
             >
               <span
                 className="
-                  relative
-                  block
-                  h-px
-                  w-[44px]
-                  overflow-hidden
-                  bg-[var(--border)]
+                  absolute
+                  inset-0
+                  rounded-full
+                  bg-[var(--foreground)]
+                  opacity-60
                 "
-              >
-                <span
-                  className="
-                    absolute
-                    inset-y-0
-                    left-0
-                    w-full
-                    bg-[var(--foreground)]
-                    animate-[hero-scroll-line_2.4s_cubic-bezier(0.16,1,0.3,1)_infinite]
-                  "
-                />
-              </span>
-
-              <span>SCROLL TO EXPLORE</span>
-            </div>
+              />
+              <span
+                className="
+                  relative
+                  h-1.5
+                  w-1.5
+                  rounded-full
+                  bg-[var(--foreground)]
+                "
+              />
+            </span>
+            <span>{heroData.status.label}</span>
           </div>
+          <span>{heroData.status.value}</span>
         </div>
-      </div>
 
-      {/* =====================================
-          PAGE INDEX
-      ===================================== */}
-
-      <div
-        ref={indexRef}
-        className="
-          absolute
-          bottom-8
-          right-6
-          z-3
-          font-mono
-          text-[9px]
-          leading-none
-          tracking-[0.12em]
-          text-[var(--foreground-subtle)]
-          md:bottom-12
-          md:right-12
-          will-change-[opacity]
-        "
-      >
-        00 / 04
+        {/* ─────────────────────────────────────
+            BOTTOM / SCROLL
+        ───────────────────────────────────── */}
+        <div
+          className="
+            hero-scroll
+            flex
+            items-center
+            justify-between
+            border-t
+            border-[var(--border)]
+            pt-5
+          "
+        >
+          <span
+            className="
+              font-mono
+              text-[10px]
+              uppercase
+              tracking-[0.16em]
+              text-[var(--foreground-subtle)]
+            "
+          >
+            {heroData.scrollLabel}
+          </span>
+          <span
+            className="
+              text-sm
+              leading-none
+              text-[var(--foreground-muted)]
+            "
+          >
+            ↓
+          </span>
+        </div>
       </div>
     </section>
   );
