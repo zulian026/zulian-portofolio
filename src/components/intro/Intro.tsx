@@ -7,59 +7,65 @@ import gsap from "gsap";
 import IntroName from "./IntroName";
 
 const INTRO_STORAGE_KEY = "zyan-intro-completed";
+const STAIR_COLUMNS = 7; // jumlah kolom tangga, tweak sesuai selera
 
 export default function Intro() {
   const rootRef = useRef<HTMLDivElement>(null);
-
   const progressRef = useRef<HTMLDivElement>(null);
-
   const progressNumberRef = useRef<HTMLSpanElement>(null);
-
   const progressBarRef = useRef<HTMLDivElement>(null);
-
   const flashRef = useRef<HTMLDivElement>(null);
-
   const noiseRef = useRef<HTMLDivElement>(null);
 
   useLayoutEffect(() => {
     const root = rootRef.current;
-
-    if (!root) {
-      return;
-    }
+    if (!root) return;
 
     /*
      * =========================================
      * CHECK INTRO STATUS
      * =========================================
-     *
-     * Intro hanya dimainkan sekali dalam
-     * satu browser session.
-     *
-     * Jadi:
-     *
-     * / -> Intro
-     * Project -> Back -> /
-     *               -> NO INTRO
      */
-
     let introCompleted = false;
-
     try {
       introCompleted = sessionStorage.getItem(INTRO_STORAGE_KEY) === "true";
     } catch {
       introCompleted = false;
     }
 
-    /*
-     * Kalau intro sudah pernah selesai,
-     * langsung hilangkan intro.
-     */
+    const landing = document.querySelector(".landing-reveal");
+
     if (introCompleted) {
       root.style.visibility = "hidden";
       root.style.opacity = "0";
       root.style.pointerEvents = "none";
+      if (landing) {
+        gsap.set(landing, { opacity: 1, scale: 1, filter: "blur(0px)" });
+      }
+      return;
+    }
 
+    /*
+     * =========================================
+     * REDUCED MOTION GUARD
+     * =========================================
+     */
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+
+    if (prefersReducedMotion) {
+      root.style.visibility = "hidden";
+      root.style.opacity = "0";
+      root.style.pointerEvents = "none";
+      if (landing) {
+        gsap.set(landing, { opacity: 1, scale: 1, filter: "blur(0px)" });
+      }
+      try {
+        sessionStorage.setItem(INTRO_STORAGE_KEY, "true");
+      } catch {
+        // ignore
+      }
       return;
     }
 
@@ -68,28 +74,14 @@ export default function Intro() {
      * ELEMENTS
      * =========================================
      */
-
     const letters = root.querySelectorAll(".intro-letter");
-
     const name = root.querySelector(".intro-name");
-
     const progress = progressRef.current;
-
     const progressNumber = progressNumberRef.current;
-
     const progressBar = progressBarRef.current;
-
     const flash = flashRef.current;
-
     const noise = noiseRef.current;
-
-    const landing = document.querySelector(".landing-reveal");
-
-    /*
-     * =========================================
-     * SAFETY CHECK
-     * =========================================
-     */
+    const columns = root.querySelectorAll(".intro-stair-column");
 
     if (
       !letters.length ||
@@ -99,464 +91,259 @@ export default function Intro() {
       !progressBar ||
       !flash ||
       !noise ||
+      !columns.length ||
       !landing
     ) {
       console.error("[Intro] Animation target missing", {
         letters: letters.length,
-
         name: Boolean(name),
-
         progress: Boolean(progress),
-
         progressNumber: Boolean(progressNumber),
-
         progressBar: Boolean(progressBar),
-
         flash: Boolean(flash),
-
         noise: Boolean(noise),
-
+        columns: columns.length,
         landing: Boolean(landing),
       });
-
       return;
     }
-
-    /*
-     * =========================================
-     * GSAP CONTEXT
-     * =========================================
-     */
 
     const ctx = gsap.context(() => {
       /*
        * =====================================
-       * INITIAL LETTER STATE
+       * INITIAL STATE
        * =====================================
        */
+      gsap.set(columns, { y: "0%" });
 
       gsap.set(letters, {
         y: "130%",
-
         opacity: 0,
-
         filter: "blur(10px)",
-
         scale: 1.05,
+        rotationX: 55,
+        transformPerspective: 600,
+        transformOrigin: "50% 100%",
       });
-
-      /*
-       * =====================================
-       * NAME
-       * =====================================
-       */
 
       gsap.set(name, {
         x: "-50%",
-
         y: "-50%",
-
         opacity: 1,
-
         scale: 1,
-
         filter: "blur(0px)",
       });
 
-      /*
-       * =====================================
-       * PROGRESS
-       * =====================================
-       */
-
-      gsap.set(progress, {
-        opacity: 0,
-
-        y: 12,
-      });
-
-      /*
-       * =====================================
-       * PROGRESS BAR
-       * =====================================
-       */
-
-      gsap.set(progressBar, {
-        scaleX: 0,
-
-        transformOrigin: "left center",
-      });
-
-      /*
-       * =====================================
-       * FLASH
-       * =====================================
-       */
-
-      gsap.set(flash, {
-        opacity: 0,
-      });
-
-      /*
-       * =====================================
-       * NOISE
-       * =====================================
-       */
-
-      gsap.set(noise, {
-        opacity: 0.025,
-      });
-
-      /*
-       * =====================================
-       * LANDING
-       * =====================================
-       */
+      gsap.set(progress, { opacity: 0, y: 12 });
+      gsap.set(progressBar, { scaleX: 0, transformOrigin: "left center" });
+      gsap.set(flash, { opacity: 0 });
+      gsap.set(noise, { opacity: 0.025 });
 
       gsap.set(landing, {
         opacity: 0,
-
-        scale: 1.035,
-
+        scale: 1.06,
+        filter: "blur(6px)",
         transformOrigin: "center center",
       });
-
-      /*
-       * =====================================
-       * TIMELINE
-       * =====================================
-       */
 
       const tl = gsap.timeline();
 
       /*
-       * =====================================
-       * 01
-       *
-       * LETTER COUNTDOWN
-       * =====================================
+       * 01 — LETTER FLIP-IN
        */
-
       tl.to(letters, {
         y: "0%",
-
         opacity: 1,
-
         filter: "blur(0px)",
-
         scale: 1,
-
-        duration: 0.3,
-
-        stagger: 0.075,
-
+        rotationX: 0,
+        duration: 0.4,
+        stagger: 0.07,
         ease: "power4.out",
       });
 
       /*
-       * =====================================
-       * 02
-       *
-       * SETTLE
-       * =====================================
+       * 02 — SETTLE MICRO-BOUNCE
        */
-
       tl.to(letters, {
         y: "-2px",
-
         duration: 0.1,
-
         stagger: 0.015,
-
         ease: "power2.out",
       });
-
       tl.to(letters, {
         y: "0px",
-
-        duration: 0.1,
-
+        duration: 0.12,
         stagger: 0.015,
-
         ease: "power2.inOut",
       });
 
       /*
-       * =====================================
-       * 03
-       *
-       * HOLD
-       * =====================================
+       * 03 — HOLD
        */
-
-      tl.to(
-        {},
-        {
-          duration: 0.2,
-        },
-      );
+      tl.to({}, { duration: 0.2 });
 
       /*
-       * =====================================
-       * 04
-       *
-       * PROGRESS APPEAR
-       * =====================================
+       * 04 — PROGRESS APPEAR
        */
-
       tl.to(progress, {
         opacity: 1,
-
         y: 0,
-
         duration: 0.3,
-
         ease: "power3.out",
       });
 
       /*
-       * =====================================
-       * 05
-       *
-       * LOADING
-       * =====================================
+       * 05 — LOADING (non-linear, terasa "nyata")
        */
-
-      const loading = {
-        value: 0,
+      const loading = { value: 0 };
+      const updateProgress = () => {
+        const value = Math.round(loading.value);
+        progressNumber.textContent = `${String(value).padStart(2, "0")}%`;
+        gsap.set(progressBar, { scaleX: loading.value / 100 });
       };
 
       tl.to(loading, {
+        value: 58,
+        duration: 0.45,
+        ease: "power2.out",
+        onUpdate: updateProgress,
+      });
+      tl.to(loading, {
+        value: 82,
+        duration: 0.35,
+        ease: "power1.inOut",
+        onUpdate: updateProgress,
+      });
+      tl.to({}, { duration: 0.1 }); // micro-stutter, kesan nge-load beneran
+      tl.to(loading, {
         value: 100,
-
-        duration: 1.15,
-
-        ease: "power2.inOut",
-
-        onUpdate: () => {
-          const value = Math.round(loading.value);
-
-          progressNumber.textContent = `${String(value).padStart(2, "0")}%`;
-
-          gsap.set(progressBar, {
-            scaleX: loading.value / 100,
-          });
-        },
+        duration: 0.3,
+        ease: "power3.out",
+        onUpdate: updateProgress,
       });
 
       /*
-       * =====================================
-       * 06
-       *
-       * 100% HOLD
-       * =====================================
+       * 06 — 100% HOLD + PULSE
        */
-
-      tl.to(
-        {},
-        {
-          duration: 0.12,
-        },
-      );
+      tl.to(progressNumber, {
+        scale: 1.12,
+        duration: 0.12,
+        ease: "power2.out",
+        yoyo: true,
+        repeat: 1,
+      });
 
       /*
-       * =====================================
-       * 07
-       *
-       * PROGRESS OUT
-       * =====================================
+       * 07 — PROGRESS OUT
        */
-
       tl.to(progress, {
         opacity: 0,
-
         y: -10,
-
         duration: 0.28,
-
         ease: "power3.inOut",
       });
 
       /*
-       * =====================================
-       * 08
-       *
-       * BACKGROUND OPENS
-       * =====================================
+       * 08 — NAME LIFT
        */
-
-      tl.to(root, {
-        opacity: 0.98,
-
-        duration: 0.7,
-
-        ease: "power2.inOut",
-      });
+      tl.to(
+        letters,
+        {
+          y: "-130%",
+          opacity: 0,
+          filter: "blur(6px)",
+          rotationX: -40,
+          duration: 0.5,
+          stagger: 0.03,
+          ease: "power4.inOut",
+        },
+        "-=0.05",
+      );
+      tl.to(
+        name,
+        {
+          scale: 0.96,
+          duration: 0.6,
+          ease: "power2.out",
+        },
+        "<",
+      );
 
       /*
-       * =====================================
-       * 09
-       *
-       * NOISE OUT
-       * =====================================
+       * 09 — FLASH BURST (nandain mulai transisi)
        */
+      tl.fromTo(
+        flash,
+        { opacity: 0 },
+        {
+          opacity: 0.16,
+          duration: 0.1,
+          ease: "power2.out",
+        },
+        "-=0.2",
+      );
+      tl.to(flash, {
+        opacity: 0,
+        duration: 0.4,
+        ease: "power2.out",
+      });
 
       tl.to(
         noise,
         {
           opacity: 0,
-
-          duration: 0.55,
-
+          duration: 0.5,
           ease: "power2.out",
         },
         "<",
       );
 
       /*
-       * =====================================
-       * 10
-       *
-       * NAME LIFT
-       * =====================================
+       * 10 — STAIRCASE WIPE
+       * Tiap kolom swipe ke atas dengan stagger → efek tangga,
+       * ngereveal landing per-strip, bukan satu curtain gede.
        */
-
       tl.to(
-        letters,
+        columns,
         {
-          y: "-130%",
-
-          opacity: 0,
-
-          filter: "blur(6px)",
-
-          duration: 0.55,
-
-          stagger: 0.03,
-
-          ease: "power4.inOut",
-        },
-        "<",
-      );
-
-      tl.to(
-        name,
-        {
-          scale: 0.97,
-
+          y: "-100%",
           duration: 0.7,
-
-          ease: "power2.out",
+          ease: "power4.inOut",
+          stagger: {
+            each: 0.08,
+            from: "start",
+          },
+          onComplete: () => {
+            try {
+              sessionStorage.setItem(INTRO_STORAGE_KEY, "true");
+            } catch {
+              // ignore
+            }
+            root.style.visibility = "hidden";
+            root.style.pointerEvents = "none";
+          },
         },
-        "<",
+        "-=0.15",
       );
 
-      /*
-       * =====================================
-       * 11
-       *
-       * FLASH
-       * =====================================
-       */
-
-      tl.fromTo(
-        flash,
+      tl.to(
+        landing,
         {
-          opacity: 0,
+          opacity: 1,
+          scale: 1,
+          filter: "blur(0px)",
+          duration: 0.85,
+          ease: "power3.out",
         },
-        {
-          opacity: 0.12,
-
-          duration: 0.1,
-
-          ease: "power2.out",
-        },
+        "-=0.9",
       );
-
-      /*
-       * =====================================
-       * 12
-       *
-       * FLASH OUT
-       * =====================================
-       */
-
-      tl.to(flash, {
-        opacity: 0,
-
-        duration: 0.35,
-
-        ease: "power2.out",
-      });
-
-      /*
-       * =====================================
-       * 13
-       *
-       * INTRO OUT
-       * =====================================
-       */
-
-      tl.to(root, {
-        opacity: 0,
-
-        duration: 0.2,
-
-        ease: "power2.out",
-
-        onComplete: () => {
-          /*
-           * IMPORTANT:
-           *
-           * Tandai intro sudah selesai.
-           */
-          try {
-            sessionStorage.setItem(INTRO_STORAGE_KEY, "true");
-          } catch {
-            // Ignore storage errors.
-          }
-
-          root.style.visibility = "hidden";
-
-          root.style.pointerEvents = "none";
-        },
-      });
-
-      /*
-       * =====================================
-       * 14
-       *
-       * LANDING REVEAL
-       * =====================================
-       */
-
-      tl.to(landing, {
-        opacity: 1,
-
-        scale: 1,
-
-        duration: 0.85,
-
-        ease: "power3.out",
-      });
     }, root);
-
-    /*
-     * =========================================
-     * CLEANUP
-     * =========================================
-     */
 
     return () => {
       ctx.revert();
     };
   }, []);
-
-  /*
-   * ===========================================
-   * RENDER
-   * ===========================================
-   */
 
   return (
     <div
@@ -564,103 +351,80 @@ export default function Intro() {
       className="
         fixed
         inset-0
-
         z-[9999]
-
         flex
         items-center
         justify-center
-
         overflow-hidden
-
-        bg-[var(--background)]
-
         text-[var(--foreground)]
-
-        will-change-[opacity]
       "
     >
-      {/* =====================================
-          NOISE
-      ===================================== */}
+      {/* STAIRCASE COLUMNS — pengganti bg solid di root */}
+      <div className="absolute inset-0 z-0 flex">
+        {Array.from({ length: STAIR_COLUMNS }).map((_, i) => (
+          <div
+            key={i}
+            className="
+              intro-stair-column
+              h-full
+              flex-1
+              bg-[var(--background)]
+              will-change-transform
+            "
+          />
+        ))}
+      </div>
 
       <div
         ref={noiseRef}
         className="
           intro-noise
-
           pointer-events-none
-
           absolute
           inset-0
-
           z-50
         "
       />
 
-      {/* =====================================
-          NAME
-      ===================================== */}
-
       <IntroName />
-
-      {/* =====================================
-          PROGRESS
-      ===================================== */}
 
       <div
         ref={progressRef}
         className="
           absolute
-
           left-1/2
-
           top-[calc(50%+7rem)]
-
           z-20
-
           w-[min(280px,calc(100vw-48px))]
-
           -translate-x-1/2
-
           will-change-[transform,opacity]
         "
       >
         <div
           className="
             mb-2
-
             flex
-
             items-center
             justify-between
-
             font-mono
-
             text-[9px]
-
             leading-none
-
             tracking-[0.18em]
-
             uppercase
-
             text-[var(--foreground-muted)]
           "
         >
           <span>INITIALIZING</span>
-
-          <span ref={progressNumberRef}>00%</span>
+          <span ref={progressNumberRef} className="inline-block">
+            00%
+          </span>
         </div>
 
         <div
           className="
             h-px
-
             w-full
-
             overflow-hidden
-
             bg-[var(--border)]
           "
         >
@@ -668,33 +432,22 @@ export default function Intro() {
             ref={progressBarRef}
             className="
               h-full
-
               w-full
-
               origin-left
-
               bg-[var(--foreground)]
-
               will-change-transform
             "
           />
         </div>
       </div>
 
-      {/* =====================================
-          FLASH
-      ===================================== */}
-
       <div
         ref={flashRef}
         className="
           pointer-events-none
-
           absolute
           inset-0
-
           z-[100]
-
           bg-[var(--background)]
         "
       />

@@ -37,11 +37,6 @@ export default function SkillsLoop() {
     ).matches;
     if (reducedMotion) return;
 
-    // Snake wave config
-    const AMPLITUDE = 18; // tinggi liukan (px)
-    const WAVELENGTH = 280; // panjang gelombang (px)
-    const TILT = 5; // derajat tilt
-
     // State
     let currentX = 0;
     let speed = 0.2;
@@ -49,20 +44,9 @@ export default function SkillsLoop() {
     let previousTime = performance.now();
     let frameId = 0;
 
-    const items = Array.from(
-      track.querySelectorAll<HTMLElement>("[data-skill-item]"),
-    );
-    let baseLefts: number[] = [];
-
     const getWidth = () => firstSet.offsetWidth;
 
-    const measure = () => {
-      baseLefts = items.map((el) => el.offsetLeft);
-    };
-
-    measure();
-
-    // Animation loop
+    // Animation loop — marquee lurus, tinggal geser track
     const animate = (time: number) => {
       const delta = Math.min(time - previousTime, 32);
       previousTime = time;
@@ -78,17 +62,6 @@ export default function SkillsLoop() {
       }
 
       track.style.transform = `translate3d(${currentX}px, 0, 0)`;
-
-      // Snake wave – world position based
-      for (let i = 0; i < items.length; i++) {
-        const worldX = baseLefts[i] + currentX;
-        const phase = worldX / WAVELENGTH;
-        const y = Math.sin(phase) * AMPLITUDE;
-        const tilt = Math.cos(phase) * TILT;
-
-        items[i].style.transform =
-          `translate3d(0, ${y}px, 0) rotate(${tilt}deg)`;
-      }
 
       frameId = requestAnimationFrame(animate);
     };
@@ -106,13 +79,12 @@ export default function SkillsLoop() {
     section.addEventListener("mouseenter", handleEnter);
     section.addEventListener("mouseleave", handleLeave);
 
-    // Resize
+    // Resize — jaga currentX tetap valid kalau lebar berubah
     const handleResize = () => {
       const width = getWidth();
       if (width > 0 && currentX <= -width) {
         currentX = currentX % width;
       }
-      measure();
     };
 
     window.addEventListener("resize", handleResize);
@@ -134,9 +106,9 @@ export default function SkillsLoop() {
         w-full
         overflow-hidden
         bg-[var(--background)]
-        py-14
+        py-16
         md:mt-24
-        md:py-16
+        md:py-20
       "
     >
       {/* LEFT FADE */}
@@ -211,17 +183,16 @@ function SkillItem({ skill }: { skill: Skill }) {
         flex
         shrink-0
         items-center
-        gap-3
-        px-6
-        will-change-transform
-        md:px-8
+        gap-4
+        px-8
+        md:px-10
       "
     >
       <span
         className="
           flex
-          h-5
-          w-5
+          h-7
+          w-7
           shrink-0
           items-center
           justify-center
@@ -229,6 +200,8 @@ function SkillItem({ skill }: { skill: Skill }) {
           transition-transform
           duration-300
           group-hover:scale-110
+          md:h-8
+          md:w-8
         "
       >
         {skill.icon}
@@ -237,7 +210,7 @@ function SkillItem({ skill }: { skill: Skill }) {
       <span
         className="
           font-mono
-          text-[10px]
+          text-xs
           font-medium
           tracking-[0.16em]
           uppercase
@@ -245,7 +218,7 @@ function SkillItem({ skill }: { skill: Skill }) {
           transition-colors
           duration-300
           group-hover:text-[var(--foreground)]
-          md:text-[11px]
+          md:text-sm
         "
       >
         {skill.name}
@@ -253,9 +226,9 @@ function SkillItem({ skill }: { skill: Skill }) {
 
       <span
         className="
-          ml-3
-          h-1
-          w-1
+          ml-4
+          h-1.5
+          w-1.5
           shrink-0
           rounded-full
           bg-[var(--border-strong)]
@@ -266,10 +239,10 @@ function SkillItem({ skill }: { skill: Skill }) {
   );
 }
 
-/* === ICONS (tidak diubah) === */
+/* === ICONS (diperbesar) === */
 function ReactIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6" aria-hidden="true">
       <ellipse
         cx="12"
         cy="12"
@@ -303,7 +276,7 @@ function ReactIcon() {
 
 function NextIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6" aria-hidden="true">
       <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.5" />
       <path
         d="M8 8v8"
@@ -329,7 +302,7 @@ function NextIcon() {
 
 function TypeScriptIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6" aria-hidden="true">
       <rect
         x="3"
         y="3"
@@ -353,7 +326,7 @@ function TypeScriptIcon() {
 
 function JavaScriptIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6" aria-hidden="true">
       <rect
         x="3"
         y="3"
@@ -382,7 +355,7 @@ function JavaScriptIcon() {
 
 function NodeIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6" aria-hidden="true">
       <path
         d="M12 3.5l7.5 4.3v8.4L12 20.5l-7.5-4.3V7.8L12 3.5Z"
         stroke="currentColor"
@@ -399,7 +372,7 @@ function NodeIcon() {
 
 function GsapIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6" aria-hidden="true">
       <path
         d="M4 12h5l2-6 2 12 2-6h5"
         stroke="currentColor"
@@ -413,7 +386,7 @@ function GsapIcon() {
 
 function TailwindIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6" aria-hidden="true">
       <path
         d="M4 13c2.2-5 5.1-5 7.2-2.5C13.3 13 15.4 13 20 8"
         stroke="currentColor"
@@ -432,7 +405,7 @@ function TailwindIcon() {
 
 function PostgresIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6" aria-hidden="true">
       <path
         d="M7 6.5C7 4.6 9.2 3 12 3s5 1.6 5 3.5v7c0 2-2.2 3.5-5 3.5s-5-1.5-5-3.5v-7Z"
         stroke="currentColor"
@@ -450,7 +423,7 @@ function PostgresIcon() {
 
 function LinuxIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6" aria-hidden="true">
       <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.5" />
       <circle cx="9" cy="10" r="1" fill="currentColor" />
       <circle cx="15" cy="10" r="1" fill="currentColor" />

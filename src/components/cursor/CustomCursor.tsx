@@ -1,353 +1,301 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-
+import { useEffect, useRef } from "react";
 import gsap from "gsap";
 
-type CursorMode = "default" | "view" | "open" | "mail";
+type CursorMode = "default" | "view" | "mail";
+
+const LABELS: Record<Exclude<CursorMode, "default">, string> = {
+  view: "VIEW",
+  mail: "MAIL",
+};
+
+const DOT_SIZE = 10;
+const HOVER_SIZE = 72;
 
 export default function CustomCursor() {
   const cursorRef = useRef<HTMLDivElement>(null);
-
-  const labelRef = useRef<HTMLSpanElement>(null);
-
   const dotRef = useRef<HTMLDivElement>(null);
-
-  const [enabled, setEnabled] = useState(false);
-
+  const labelRef = useRef<HTMLSpanElement>(null);
   const modeRef = useRef<CursorMode>("default");
+  const isVisibleRef = useRef(false);
 
   useEffect(() => {
-    /*
-     * =========================================
-     * DEVICE CHECK
-     * =========================================
-     */
-
-    const isTouch = window.matchMedia("(pointer: coarse)").matches;
-
-    if (isTouch) {
-      return;
-    }
-
-    setEnabled(true);
-
     const cursor = cursorRef.current;
-
-    const label = labelRef.current;
-
     const dot = dotRef.current;
+    const label = labelRef.current;
+    if (!cursor || !dot || !label) return;
 
-    if (!cursor || !label || !dot) {
-      return;
-    }
+    // Skip di touch device
+    const pointerQuery = window.matchMedia("(pointer: coarse)");
+    if (pointerQuery.matches) return;
 
-    /*
-     * =========================================
-     * INITIAL
-     * =========================================
-     */
+    const reducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
 
-    gsap.set(cursor, {
-      xPercent: -50,
-      yPercent: -50,
-      scale: 0.7,
-      opacity: 0,
-    });
-
-    gsap.set(dot, {
-      scale: 1,
-    });
-
-    /*
-     * =========================================
-     * POSITION
-     * =========================================
-     */
-
-    const position = {
-      x: window.innerWidth / 2,
-      y: window.innerHeight / 2,
-    };
-
-    const target = {
-      x: position.x,
-      y: position.y,
-    };
-
-    /*
-     * =========================================
-     * MOUSE MOVE
-     * =========================================
-     */
-
-    const handleMouseMove = (event: MouseEvent) => {
-      target.x = event.clientX;
-      target.y = event.clientY;
-
-      gsap.to(cursor, {
-        x: target.x,
-        y: target.y,
-
-        duration: 0.55,
-
-        ease: "power3.out",
-
-        overwrite: true,
-      });
-
-      if (modeRef.current === "default") {
-        gsap.to(dot, {
-          scale: 1,
-
-          duration: 0.3,
-
-          ease: "power3.out",
-        });
-      }
-    };
-
-    /*
-     * =========================================
-     * MOUSE ENTER WINDOW
-     * =========================================
-     */
-
-    const handleMouseEnter = () => {
-      gsap.to(cursor, {
-        opacity: 1,
-
-        duration: 0.35,
-
-        ease: "power2.out",
-      });
-    };
-
-    /*
-     * =========================================
-     * MOUSE LEAVE WINDOW
-     * =========================================
-     */
-
-    const handleMouseLeave = () => {
-      gsap.to(cursor, {
+    const ctx = gsap.context(() => {
+      gsap.set(cursor, {
+        xPercent: -50,
+        yPercent: -50,
+        scale: 0.4,
         opacity: 0,
-
-        duration: 0.25,
-
-        ease: "power2.out",
+        width: DOT_SIZE,
+        height: DOT_SIZE,
       });
-    };
 
-    window.addEventListener("mousemove", handleMouseMove, {
-      passive: true,
-    });
+      gsap.set(dot, { opacity: 1 });
 
-    document.addEventListener("mouseenter", handleMouseEnter);
+      gsap.set(label, {
+        opacity: 0,
+        scale: 0.6,
+        y: 6,
+      });
 
-    document.addEventListener("mouseleave", handleMouseLeave);
+      const moveX = gsap.quickTo(cursor, "x", {
+        duration: 0.45,
+        ease: "power3.out",
+      });
+      const moveY = gsap.quickTo(cursor, "y", {
+        duration: 0.45,
+        ease: "power3.out",
+      });
 
-    /*
-     * =========================================
-     * CURSOR EVENT SYSTEM
-     * =========================================
-     */
+      // Pulse halus tiap gerak, balik lagi ke 1 (yoyo) biar gak numpuk scale
+      const scaleTween = gsap.to(cursor, {
+        scale: 1.12,
+        duration: 0.28,
+        ease: "power2.out",
+        paused: true,
+        yoyo: true,
+        repeat: 1,
+      });
 
-    const updateCursorMode = (event: Event) => {
-      const target = event.target;
+      let lastX = 0;
+      let lastY = 0;
 
-      if (!(target instanceof Element)) {
-        return;
-      }
+      const setMode = (mode: CursorMode) => {
+        if (modeRef.current === mode) return;
+        modeRef.current = mode;
 
-      const cursorTarget = target.closest<HTMLElement>("[data-cursor]");
+        if (mode === "default") {
+          gsap.to(cursor, {
+            width: DOT_SIZE,
+            height: DOT_SIZE,
+            scale: 1,
+            duration: 0.5,
+            ease: "power3.out",
+          });
+          gsap.to(dot, {
+            opacity: 1,
+            duration: 0.3,
+            ease: "power2.out",
+          });
+          gsap.to(label, {
+            opacity: 0,
+            scale: 0.6,
+            y: 6,
+            duration: 0.25,
+            ease: "power2.in",
+          });
+          return;
+        }
 
-      const nextMode =
-        (cursorTarget?.dataset.cursor as CursorMode) || "default";
+        label.textContent = LABELS[mode];
 
-      if (nextMode === modeRef.current) {
-        return;
-      }
-
-      modeRef.current = nextMode;
-
-      updateVisual(nextMode);
-    };
-
-    const updateVisual = (mode: CursorMode) => {
-      if (!cursor || !label || !dot) {
-        return;
-      }
-
-      /*
-       * DEFAULT
-       */
-
-      if (mode === "default") {
         gsap.to(cursor, {
-          scale: 0.7,
-
-          duration: 0.35,
-
-          ease: "power3.out",
-        });
-
-        gsap.to(dot, {
+          width: HOVER_SIZE,
+          height: HOVER_SIZE,
           scale: 1,
-
-          duration: 0.35,
-
+          duration: 0.55,
           ease: "power3.out",
         });
 
-        gsap.to(label, {
+        // Dot inti memudar begitu ring membesar jadi label
+        gsap.to(dot, {
           opacity: 0,
-
-          scale: 0.7,
-
-          duration: 0.2,
-
+          duration: 0.25,
           ease: "power2.out",
         });
 
-        return;
-      }
-
-      /*
-       * LABEL MODES
-       */
-
-      const labels: Record<Exclude<CursorMode, "default">, string> = {
-        view: "VIEW",
-        open: "OPEN ↗",
-        mail: "MAIL ↗",
+        gsap.fromTo(
+          label,
+          { opacity: 0, scale: 0.55, y: 8 },
+          {
+            opacity: 1,
+            scale: 1,
+            y: 0,
+            duration: 0.4,
+            ease: "back.out(1.7)",
+            delay: 0.05,
+          },
+        );
       };
 
-      label.textContent = labels[mode as Exclude<CursorMode, "default">];
+      const handlePointerMove = (event: PointerEvent) => {
+        const { clientX, clientY } = event;
 
-      gsap.to(cursor, {
-        scale: 1,
+        moveX(clientX);
+        moveY(clientY);
 
-        duration: 0.45,
+        if (!reducedMotion && modeRef.current === "default") {
+          const dx = Math.abs(clientX - lastX);
+          const dy = Math.abs(clientY - lastY);
+          if ((dx > 2 || dy > 2) && isVisibleRef.current) {
+            scaleTween.restart();
+          }
+        }
+        lastX = clientX;
+        lastY = clientY;
 
-        ease: "power3.out",
+        if (!isVisibleRef.current && modeRef.current === "default") {
+          isVisibleRef.current = true;
+          gsap.to(cursor, {
+            opacity: 1,
+            scale: 1,
+            duration: 0.4,
+            ease: "power2.out",
+          });
+        }
+      };
+
+      const handlePointerOver = (event: PointerEvent) => {
+        const target = event.target as Element | null;
+        if (!target) return;
+
+        const interactive = target.closest<HTMLElement>("[data-cursor]");
+        const mode = interactive?.dataset.cursor as CursorMode | undefined;
+
+        if (mode === "view" || mode === "mail") {
+          setMode(mode);
+        }
+      };
+
+      const handlePointerOut = (event: PointerEvent) => {
+        const target = event.target as Element | null;
+        if (!target) return;
+
+        const interactive = target.closest<HTMLElement>("[data-cursor]");
+        if (!interactive) return;
+
+        const related = event.relatedTarget as Node | null;
+        if (related && interactive.contains(related)) return;
+
+        setMode("default");
+      };
+
+      const handlePointerLeave = () => {
+        isVisibleRef.current = false;
+        setMode("default");
+        gsap.to(cursor, {
+          opacity: 0,
+          scale: 0.6,
+          duration: 0.3,
+          ease: "power2.out",
+        });
+      };
+
+      const handlePointerEnter = () => {
+        if (modeRef.current === "default") {
+          isVisibleRef.current = true;
+          gsap.to(cursor, {
+            opacity: 1,
+            scale: 1,
+            duration: 0.35,
+            ease: "power2.out",
+          });
+        }
+      };
+
+      window.addEventListener("pointermove", handlePointerMove, {
+        passive: true,
       });
+      document.addEventListener("pointerover", handlePointerOver);
+      document.addEventListener("pointerout", handlePointerOut);
+      document.documentElement.addEventListener(
+        "pointerleave",
+        handlePointerLeave,
+      );
+      document.documentElement.addEventListener(
+        "pointerenter",
+        handlePointerEnter,
+      );
 
-      gsap.to(dot, {
-        scale: 0,
+      return () => {
+        window.removeEventListener("pointermove", handlePointerMove);
+        document.removeEventListener("pointerover", handlePointerOver);
+        document.removeEventListener("pointerout", handlePointerOut);
+        document.documentElement.removeEventListener(
+          "pointerleave",
+          handlePointerLeave,
+        );
+        document.documentElement.removeEventListener(
+          "pointerenter",
+          handlePointerEnter,
+        );
+      };
+    }, cursor);
 
-        duration: 0.35,
-
-        ease: "power3.out",
-      });
-
-      gsap.to(label, {
-        opacity: 1,
-
-        scale: 1,
-
-        duration: 0.4,
-
-        ease: "power3.out",
-      });
-    };
-
-    /*
-     * pointerover lebih tepat daripada
-     * mouseover karena kita hanya ingin
-     * mendeteksi perubahan element target.
-     */
-
-    document.addEventListener("pointerover", updateCursorMode);
-
-    document.addEventListener("pointerout", updateCursorMode);
-
-    /*
-     * =========================================
-     * CLEANUP
-     * =========================================
-     */
-
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-
-      document.removeEventListener("mouseenter", handleMouseEnter);
-
-      document.removeEventListener("mouseleave", handleMouseLeave);
-
-      document.removeEventListener("pointerover", updateCursorMode);
-
-      document.removeEventListener("pointerout", updateCursorMode);
-    };
+    return () => ctx.revert();
   }, []);
-
-  if (!enabled) {
-    return null;
-  }
 
   return (
     <div
       ref={cursorRef}
+      aria-hidden="true"
       className="
         pointer-events-none
         fixed
         left-0
         top-0
         z-[99999]
-
         flex
-        h-[76px]
-        w-[76px]
-
         items-center
         justify-center
-
+        overflow-hidden
         rounded-full
-
-        border
-        border-[var(--foreground)]
-
-        bg-[var(--foreground)]
-
+        opacity-0
         will-change-transform
-
-        mix-blend-normal
+        mix-blend-difference
       "
+      style={{ width: DOT_SIZE, height: DOT_SIZE }}
     >
-      {/* DOT */}
-
+      {/* Ring tipis di sekeliling, biar dot gak flat */}
+      <div
+        className="
+          absolute
+          inset-0
+          rounded-full
+          border
+          border-[var(--foreground)]/40
+        "
+      />
+      {/* Dot inti */}
       <div
         ref={dotRef}
         className="
-          h-[5px]
-          w-[5px]
+          absolute
+          h-full
+          w-full
           rounded-full
-          bg-[var(--background)]
-          will-change-transform
+          bg-[var(--foreground)]
+          shadow-[0_0_10px_var(--foreground)]
         "
       />
-
-      {/* LABEL */}
-
       <span
         ref={labelRef}
         className="
-          absolute
-
+          relative
+          select-none
           font-mono
-          text-[8px]
+          text-[9px]
           font-semibold
+          uppercase
           tracking-[0.14em]
-
+          leading-none
           text-[var(--background)]
-
-          opacity-0
-
-          will-change-transform
         "
-      >
-        VIEW
-      </span>
+      />
     </div>
   );
 }

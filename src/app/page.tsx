@@ -39,7 +39,7 @@ export default function Home() {
 
       {/* SKILLS */}
 
-      {/*<SkillsLoop />*/}
+      <SkillsLoop />
 
       {/* WORK */}
 

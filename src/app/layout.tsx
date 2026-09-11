@@ -5,7 +5,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import SmoothScroll from "@/components/smooth-scroll/SmoothScroll";
 import PageTransition from "@/components/transition/PageTransition";
-// import CustomCursor from "@/components/cursor/CustomCursor";
+import CustomCursor from "@/components/cursor/CustomCursor";
 
 const geist = Geist({
   variable: "--font-geist",
@@ -32,9 +32,8 @@ export default function RootLayout({
       <body className={`${geist.variable} ${geistMono.variable}`}>
         <ThemeProvider>
           <SmoothScroll>
+            <CustomCursor />
             <PageTransition />
-
-            {/*<CustomCursor />*/}
 
             {children}
           </SmoothScroll>

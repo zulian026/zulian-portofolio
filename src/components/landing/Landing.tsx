@@ -14,6 +14,8 @@ export default function Landing() {
       "(prefers-reduced-motion: reduce)",
     ).matches;
 
+    let cleanupScroll: (() => void) | undefined;
+
     const ctx = gsap.context(() => {
       const letters = gsap.utils.toArray<HTMLElement>(".hero-letter");
       const heroTopMeta = section.querySelector<HTMLElement>(".hero-top-meta");
@@ -60,7 +62,7 @@ export default function Landing() {
       /* ─────────────────────────────────────────
          INITIAL STATE
       ───────────────────────────────────────── */
-      gsap.set(letters, { opacity: 0, y: 72 });
+      gsap.set(letters, { opacity: 0, y: 84 });
       gsap.set(heroTopMeta, { opacity: 0, y: 14 });
       gsap.set(heroRole, { opacity: 0, y: 18 });
       gsap.set(heroDescription, { opacity: 0, y: 20 });
@@ -76,39 +78,28 @@ export default function Landing() {
         defaults: { ease: "power3.out" },
       });
 
-      // Top meta
       timeline.to(heroTopMeta, { opacity: 1, y: 0, duration: 0.75 }, 0);
 
-      // Name letters
       timeline.to(
         letters,
         {
           opacity: 1,
           y: 0,
-          duration: 0.95,
-          stagger: 0.028,
+          duration: 1,
+          stagger: 0.024,
           ease: "power4.out",
         },
         0.05,
       );
 
-      // Role
-      timeline.to(heroRole, { opacity: 1, y: 0, duration: 0.75 }, "-=0.55");
-
-      // Description
+      timeline.to(heroRole, { opacity: 1, y: 0, duration: 0.75 }, "-=0.6");
       timeline.to(
         heroDescription,
         { opacity: 1, y: 0, duration: 0.8 },
-        "-=0.5",
+        "-=0.55",
       );
-
-      // Focus tags
-      timeline.to(heroFocus, { opacity: 1, y: 0, duration: 0.7 }, "-=0.45");
-
-      // Status
+      timeline.to(heroFocus, { opacity: 1, y: 0, duration: 0.7 }, "-=0.5");
       timeline.to(heroStatus, { opacity: 1, y: 0, duration: 0.65 }, "-=0.35");
-
-      // Scroll indicator
       timeline.to(heroScroll, { opacity: 1, y: 0, duration: 0.65 }, "-=0.25");
 
       /* ─────────────────────────────────────────
@@ -124,17 +115,14 @@ export default function Landing() {
           y: progress * -64,
           opacity: 1 - progress * 0.32,
         });
-
         gsap.set(heroTopMeta, {
           y: progress * -18,
           opacity: 1 - progress,
         });
-
         gsap.set(heroStatus, {
           y: progress * 12,
           opacity: 1 - progress * 0.8,
         });
-
         gsap.set(heroScroll, {
           y: progress * 24,
           opacity: 1 - progress,
@@ -144,12 +132,17 @@ export default function Landing() {
       window.addEventListener("scroll", updateHeroScroll, { passive: true });
       updateHeroScroll();
 
-      return () => {
+      // Simpan cleanup di variabel luar, bukan return dari context
+      // (gsap.context tidak menjalankan return value ini saat revert()).
+      cleanupScroll = () => {
         window.removeEventListener("scroll", updateHeroScroll);
       };
     }, section);
 
-    return () => ctx.revert();
+    return () => {
+      cleanupScroll?.();
+      ctx.revert();
+    };
   }, []);
 
   return (
@@ -164,23 +157,6 @@ export default function Landing() {
         text-[var(--foreground)]
       "
     >
-      {/* Subtle decorative accent — pure solid blur, no gradient */}
-      <div
-        aria-hidden
-        className="
-          pointer-events-none
-          absolute
-          left-1/2
-          top-[-10%]
-          h-[480px]
-          w-[720px]
-          -translate-x-1/2
-          rounded-full
-          bg-[var(--foreground)]/[0.035]
-          blur-[110px]
-        "
-      />
-
       <div
         className="
           relative
@@ -222,91 +198,88 @@ export default function Landing() {
         </div>
 
         {/* ─────────────────────────────────────
-            MAIN HERO
+            MAIN HERO — satu alur tipografis penuh
         ───────────────────────────────────── */}
-        <div
-          className="
-            hero-main
-            mt-auto
-            grid
-            grid-cols-1
-            gap-12
-            pb-12
-            md:grid-cols-[1fr_280px]
-            md:items-end
-            md:gap-14
-            md:pb-16
-            lg:grid-cols-[1fr_340px]
-            lg:gap-16
-          "
-        >
-          {/* NAME */}
-          <div>
-            <h1
+        <div className="hero-main mt-auto">
+          {/* NAME — full width, jadi elemen paling dominan */}
+          <h1
+            className="
+              w-full
+              font-medium
+              leading-[0.74]
+              tracking-[-0.08em]
+            "
+          >
+            <span
               className="
-                font-medium
-                leading-[0.78]
-                tracking-[-0.075em]
+                block
+                overflow-hidden
+                text-[clamp(4.5rem,16vw,13.5rem)]
               "
             >
-              <span
-                className="
-                  block
-                  overflow-hidden
-                  text-[clamp(4.25rem,12.5vw,11.5rem)]
-                "
-              >
-                {heroData.name.first.split("").map((letter, index) => (
-                  <span
-                    key={`first-${letter}-${index}`}
-                    className="hero-letter inline-block will-change-transform"
-                  >
-                    {letter === " " ? "\u00A0" : letter}
-                  </span>
-                ))}
-              </span>
+              {heroData.name.first.split("").map((letter, index) => (
+                <span
+                  key={`first-${letter}-${index}`}
+                  className="hero-letter inline-block will-change-transform"
+                >
+                  {letter === " " ? "\u00A0" : letter}
+                </span>
+              ))}
+            </span>
 
-              <span
-                className="
-                  block
-                  overflow-hidden
-                  text-[clamp(4.25rem,12.5vw,11.5rem)]
-                "
-              >
-                {heroData.name.last.split("").map((letter, index) => (
-                  <span
-                    key={`last-${letter}-${index}`}
-                    className="hero-letter inline-block will-change-transform"
-                  >
-                    {letter === " " ? "\u00A0" : letter}
-                  </span>
-                ))}
-              </span>
-            </h1>
-          </div>
+            <span
+              className="
+                block
+                overflow-hidden
+                text-[clamp(4.5rem,16vw,13.5rem)]
+              "
+            >
+              {heroData.name.last.split("").map((letter, index) => (
+                <span
+                  key={`last-${letter}-${index}`}
+                  className="hero-letter inline-block will-change-transform"
+                >
+                  {letter === " " ? "\u00A0" : letter}
+                </span>
+              ))}
+            </span>
+          </h1>
 
-          {/* RIGHT INFORMATION */}
-          <div className="pb-1 md:pb-2">
-            {/* ROLE */}
+          {/* CAPTION LINE — role, description, focus jadi satu baris tipografis */}
+          <div
+            className="
+              mt-8
+              flex
+              flex-col
+              gap-6
+              border-t
+              border-[var(--border)]
+              pt-6
+              md:flex-row
+              md:items-start
+              md:justify-between
+              md:gap-10
+            "
+          >
             <div
               className="
                 hero-role
-                mb-7
                 font-mono
                 text-[10px]
                 uppercase
                 tracking-[0.16em]
                 text-[var(--foreground-muted)]
+                md:w-[160px]
+                md:shrink-0
               "
             >
               {heroData.role}
             </div>
 
-            {/* DESCRIPTION */}
             <p
               className="
                 hero-description
-                max-w-[340px]
+                max-w-[46ch]
                 text-sm
                 leading-[1.85]
                 text-[var(--foreground-muted)]
@@ -316,16 +289,15 @@ export default function Landing() {
               {heroData.description}
             </p>
 
-            {/* FOCUS */}
             <div
               className="
                 hero-focus
-                mt-8
                 flex
                 flex-wrap
                 items-center
                 gap-x-3
                 gap-y-2
+                md:shrink-0
               "
             >
               {heroData.focus.map((item, index) => (
@@ -359,6 +331,7 @@ export default function Landing() {
           className="
             hero-status
             mb-6
+            mt-14
             flex
             items-center
             justify-between
@@ -371,14 +344,7 @@ export default function Landing() {
           "
         >
           <div className="flex items-center gap-3">
-            <span
-              className="
-                relative
-                flex
-                h-1.5
-                w-1.5
-              "
-            >
+            <span className="relative flex h-1.5 w-1.5">
               <span
                 className="
                   absolute
@@ -428,13 +394,7 @@ export default function Landing() {
           >
             {heroData.scrollLabel}
           </span>
-          <span
-            className="
-              text-sm
-              leading-none
-              text-[var(--foreground-muted)]
-            "
-          >
+          <span className="text-sm leading-none text-[var(--foreground-muted)]">
             ↓
           </span>
         </div>
